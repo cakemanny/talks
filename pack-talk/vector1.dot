@@ -1,0 +1,12 @@
+digraph vector1 {
+    fontname="Helvetica,Arial,sans-serif"
+    graph[rankdir="TD"];
+    node[fontname="Helvetica,Arial,sans-serif"];
+    edge[fontname="Helvetica,Arial,sans-serif"];
+
+    // The ID must start with 'cluster' to get a box around it
+    subgraph cluster_1 {
+        label="Each node is a max-32 element tuple plus a height"
+        leaf0[shape=record, label="{{height}|{0}}|{{xs}|{0|1|2|3|4|5|6}}"];
+    }
+}

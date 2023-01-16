@@ -1,0 +1,22 @@
+// Shows the structure of a list in memory
+digraph list {
+    graph[rankdir="LR"];
+    node[fontname="Helvetica,Arial,sans-serif"];
+    edge[fontname="Helvetica,Arial,sans-serif"];
+
+    node0[shape=record, label="<f0> hd |<f1> tl "];
+    node0hd[label="1"];
+    node1[shape=record, label="<f0> hd |<f1> tl "];
+    node1hd[label="'one'"];
+    node2[shape=record, label="<f0> hd |<f1> tl "];
+    node2hd[label="two"];
+    nil[shape=record][label="nil or None"];
+
+    node0:f1 -> node1:f0
+    node1:f1 -> node2:f0
+    node2:f1 -> nil
+
+    node0:f0 -> node0hd;
+    node1:f0 -> node1hd;
+    node2:f0 -> node2hd;
+}

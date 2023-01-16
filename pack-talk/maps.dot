@@ -1,0 +1,26 @@
+// generated with draw_map.py
+digraph {
+    graph[rankdir="TD"];
+    node[
+        fontname="Helvetica,Arial,sans-serif",
+        shape=record
+    ];
+    edge[fontname="Helvetica,Arial,sans-serif"];
+
+    subgraph cluster0 {
+        fontname="monospace"; label="{:these \"maps\" :are \"strange\" :they \"look\" :rather \"empty\"}"
+        4304063872[label="{{xs}|{<f0>|<f1>|<f2>|<f3>|<f4>|<f5>|<f6>|<f7>|<f8>|<f9>|<f10>|<f11>|<f12>|<f13>|<f14>|<f15>|<f16>|<f17>|<f18>|<f19>|<f20>|<f21>|<f22>|<f23>|<f24>|<f25>|<f26>|<f27>|<f28>|<f29>|<f30>|<f31>}}|{{kindset}|{0b0}}|{{height}|{7}}"]
+        4304065856[label="{{xs}|{<f0>|<f1>|<f2>|<f3>|<f4>|<f5>|<f6>|<f7>|<f8>|<f9>|<f10>|<f11>|<f12>|<f13>|<f14>|<f15>|<f16>|<f17>|<f18>|<f19>|<f20>|<f21>|<f22>|<f23>|<f24>|<f25>|<f26>|<f27>|<f28>|<f29>|<f30>|<f31>}}|{{kindset}|{0b11}}|{{height}|{6}}"]
+        4298867456[label=":rather|empty"]
+        4304065856:f0 -> 4298867456
+        4298867840[label=":are|strange"]
+        4304065856:f1 -> 4298867840
+        4298867200[label="{{xs}|{<f0>|<f1>|<f2>|<f3>|<f4>|<f5>|<f6>|<f7>|<f8>|<f9>|<f10>|<f11>|<f12>|<f13>|<f14>|<f15>|<f16>|<f17>|<f18>|<f19>|<f20>|<f21>|<f22>|<f23>|<f24>|<f25>|<f26>|<f27>|<f28>|<f29>|<f30>|<f31>}}|{{kindset}|{0b100000000000010000000}}|{{height}|{5}}"]
+        4298637248[label=":these|maps"]
+        4298867200:f7 -> 4298637248
+        4298868672[label=":they|look"]
+        4298867200:f20 -> 4298868672
+        4304065856:f3 -> 4298867200
+        4304063872:f0 -> 4304065856
+    }
+}
