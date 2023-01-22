@@ -19,7 +19,9 @@ Ideas
 
 -->
 
+## Agenda
 
+-
 
 ## Pack
 
@@ -31,6 +33,11 @@ Most ideas based on Clojure
 - Macros
 
 <!-- -->
+
+
+## Some Code
+
+<!--  -->
 
 
 ## Syntax - Symbols
@@ -200,6 +207,21 @@ _and writing this slide I notice the bug... we should be starting height from 6_
 
 <!-- TODO: add another bitset to indicate which slots are empty  -->
 
+<!--
+##
+
+Sometimes data structures are hard... 🤦
+
+```
+(Pdb) p entry[1]
+[y 2]
+(Pdb) p v
+[]
+(Pdb) p entry[1] == v
+True
+(Pdb)
+```
+-->
 
 ## Control Structures ?
 
@@ -218,7 +240,12 @@ _and writing this slide I notice the bug... we should be starting height from 6_
 
 ## Namespaces ?
 
+```clojure
+(ns my-namespace-name)
+```
 
+```clojure
+```
 
 ## Parsing
 
@@ -283,6 +310,100 @@ def read_ident(text):
 ...
 
 
+## Match Case - What does this buy us?
+
+TODO: write an example from the compiler without using match/case
+  and compare
+
+## Match Case - Can you spot the bug?
+
+<!-- The first case in the lower match   -->
+<!-- Case statements do not fall through -->
+
+```python
+def nest_loop_in_recursive_fn(expr):
+    def contains_recur(expr):
+        match expr:
+            case Cons(Sym(None, 'recur'), _):
+                return True
+            case other:
+                return reduce_expr_tail(
+                    zero=False, plus=operator.or_, expr=other
+                )
+
+    match expr:
+        case Cons(Sym(None, 'fn'), Cons(params, Cons(body, Nil()))):
+            # by using fmap_tail, we won't accidently traverse past
+            # deeper recurs, or into other fns
+            if cata_f(fmap_tail)(contains_recur)(body):
+
+                loop = Cons(Sym(None, 'loop'),
+                            Cons(Vec.from_iter(untake_pairs(zip(params, params))),
+                                 Cons(body, nil)))
+                return Cons(Sym(None, 'fn'),
+                            Cons(params,
+                                 Cons(loop, nil)))
+        case other:
+            return other
+```
+
+## Match Case Pitfalls
+
+* Easy to forget a positional argument when matching dataclasses
+* Easy to accidentally return None:
+  * Have a default case or return an error
+  * Start writing the function with a `raise NotImplementedError` at the bottom
+* The ordering of case statements matches a lot
+* [] match sequences, not lists
+* Not possible to factor out constants
+
+
+
+Failover cases look nice, but lead to errors
+
+
+## Recursion Schemes
+
+
+rewriting to use a single pass
+
+```python
+def convert_if_expr_to_stmt(i=0):
+    def next_temp(prefix=""):
+        nonlocal i
+        i += 1
+        return Sym(None, f'{prefix}__t.{i}')
+
+    fst = lambda pair: pair[0]
+    snd = lambda pair: pair[1]
+
+    def alg(expr):
+        """
+        ExprF[(ExprF, contains_stmt: Bool)] -> (ExprF, contains_stmt: Bool)
+        """
+        match expr:
+            # c1 and c2 are whether those arms of the if expression
+            # contain any statements - as calculated in the default
+            # case
+            case IfExpr((pred, _), (con, c1), (alt, c2)) if c1 or c2:
+                t = next_temp()
+                # statement hoisting will clean this up
+                return Do((
+                    IfStmt(pred,
+                           con if is_stmt(con) else SetBang(t, con),
+                           alt if is_stmt(alt) else SetBang(t, alt)),
+                ), t), True
+            case other:
+                contains = reduce_ir(False, operator.or_, fmap_ir(snd, other))
+                return (fmap_ir(fst, other), contains or is_stmt(other))
+        assert False
+    return alg
+```
+
+then realise we can use zygomorphism to remove most of this
+base case
+
+
 ## Future Work / Ideas
 -
 - Finish compilation (i.e. transpilation) pipeline
@@ -291,16 +412,16 @@ def read_ident(text):
 
 ### Useful resources
 
-- https://github.com/sellout/recursion-scheme-talk
-- https://github.com/precog/matryoshka
+- <https://github.com/sellout/recursion-scheme-talk>
+- <https://github.com/precog/matryoshka>
 
 
 ## Source Code
 
 ### Pack Itself
 
-- https://github.com/cakemanny/pack-lang
+- <https://github.com/cakemanny/pack-lang>
 
 ### This Talk
 
-- https://github.com/cakemanny/talks
+- <https://github.com/cakemanny/talks>

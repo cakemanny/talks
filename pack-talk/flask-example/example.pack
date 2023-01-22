@@ -1,0 +1,32 @@
+(ns example)
+(import flask)
+(do (ns pack.core) (def *compile* true) (ns example))
+
+(def app
+  ((. flask Flask) "example"))
+
+(def health-endpoint
+  (fn [] "Everything's gravy baby"))
+
+;; We define a macro to comment out some pieces of code for the demo
+(defmacro comment [& forms] nil)
+
+;; Luckily this add_url_rule method
+((. app add_url_rule)
+ "/healthz"
+ (comment endpoint goes here ... but let's leave it nil)
+ health-endpoint)
+
+
+;; code to paste into the repl during the demo
+(comment
+  ((. example/app run))
+  )
+; http://127.0.0.1:5000/healthz
+
+(comment
+ (import builtins)
+ ((. builtins help) (. app add_url_rule))
+)
+
+;; vim:ft=clojure:
