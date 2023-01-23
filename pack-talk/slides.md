@@ -21,7 +21,32 @@ Ideas
 
 ## Agenda
 
--
+- Explain what a lisp is
+<!-- -->
+
+## Lisp - A quick intro for people who have not it
+<!-- Ask if people are familiar and skip over if they are -->
+
+- Created by Paul McCarthy in 1960
+- There are many dialects
+  - Scheme <!-- Chez Scheme, Racket, ... -->
+  - Common Lisp
+  - Clojure
+  - Emacs Lisp <!-- TODO check name -->
+- In principal: every
+
+- Everything is an s-expression
+- The first item at the beginning on the list is the function name
+  
+
+```
+user=> (def 🤦 5)
+#'user/🤦
+user=> 🤦
+5
+user=> (+ 🤦 5)
+10
+```
 
 ## Pack
 
@@ -223,21 +248,6 @@ True
 ```
 -->
 
-## Control Structures ?
-
-```clojure
-`(def ~name)
-`(def ~name ~init)
-
-`(if ~condition ~consequent)
-`(if ~condition ~consequent ~alternative)
-
-`(do ~@actions)
-
-(fn [x y] (+ x y))
-
-```
-
 ## Namespaces ?
 
 ```clojure
@@ -323,20 +333,11 @@ TODO: write an example from the compiler without using match/case
 ```python
 def nest_loop_in_recursive_fn(expr):
     def contains_recur(expr):
-        match expr:
-            case Cons(Sym(None, 'recur'), _):
-                return True
-            case other:
-                return reduce_expr_tail(
-                    zero=False, plus=operator.or_, expr=other
-                )
+        ...
 
     match expr:
         case Cons(Sym(None, 'fn'), Cons(params, Cons(body, Nil()))):
-            # by using fmap_tail, we won't accidently traverse past
-            # deeper recurs, or into other fns
-            if cata_f(fmap_tail)(contains_recur)(body):
-
+            if contains_recur(body):
                 loop = Cons(Sym(None, 'loop'),
                             Cons(Vec.from_iter(untake_pairs(zip(params, params))),
                                  Cons(body, nil)))
@@ -353,10 +354,10 @@ def nest_loop_in_recursive_fn(expr):
 * Easy to accidentally return None:
   * Have a default case or return an error
   * Start writing the function with a `raise NotImplementedError` at the bottom
-* The ordering of case statements matches a lot
+  * Use `typing.NoReturn` or (new in python 3.11) `typing.Never`
+* The ordering of case statements matters a lot
 * [] match sequences, not lists
 * Not possible to factor out constants
-
 
 
 Failover cases look nice, but lead to errors
@@ -406,7 +407,8 @@ base case
 
 ## Future Work / Ideas
 -
-- Finish compilation (i.e. transpilation) pipeline
+- ~Finish compilation (i.e. transpilation) pipeline~
+- python keyword argument compatibility
 
 ## Recursion Schemes - Resources
 
