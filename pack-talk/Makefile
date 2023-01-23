@@ -1,5 +1,5 @@
 
-IMAGES = lists.svg vector1.svg vector2.svg maps.svg
+IMAGES = lists.svg vector1.svg vector2.svg maps.svg compilation-stages.svg
 
 .PHONY: all
 all: slides.html

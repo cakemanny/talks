@@ -7,50 +7,78 @@ theme:
 - Crane
 date:
 - 26 Jan 2023
-
 ---
-_This slide is empty_
 
+## Agenda
 <!--
 Ideas
 - show multiple slides for showing macro expansion
 
-- Ask people on their familiarity wisp lisps?
-
 -->
 
-## Agenda
+- A quick intro to LISP for the unfamiliar
+- We talk about how we can interpret a lisp in Python
 
-- Explain what a lisp is
-<!-- -->
 
-## Lisp - A quick intro for people who have not it
-<!-- Ask if people are familiar and skip over if they are -->
+## LISP - A quick intro for people who have not seen it
 
-- Created by Paul McCarthy in 1960
+::: notes
+Ask if people are familiar and skip over if they are
+:::
+
+- Created by John McCarthy in 1960
 - There are many dialects
   - Scheme <!-- Chez Scheme, Racket, ... -->
   - Common Lisp
   - Clojure
   - Emacs Lisp <!-- TODO check name -->
-- In principal: every
 
-- Everything is an s-expression
+- Everything is an s-expression.
+  - Lists starting with `(` and ending with `)`
 - The first item at the beginning on the list is the function name
-  
 
+
+## LISP - A quick intro for people who have not seen it
+
+### In Python we say...
+```python
+>>> 1 + 2
+3
+>>> 2 * 4 + 6 * 8
+56
 ```
-user=> (def 🤦 5)
-#'user/🤦
-user=> 🤦
-5
-user=> (+ 🤦 5)
-10
+
+### In a LISP we say...
+```clojure
+user=> (+ 1 2)
+3
+user=> (+ (* 2 4) (* 6 8))
+56
+```
+
+
+## LISP - A quick intro for people who have not seen it
+
+### In Python we say...
+
+```python
+>>> def is_valid(age):
+...     if age < 0 or age > 129:
+...         return True
+...     return False
+```
+
+### In a LISP we might say...
+```clojure
+user=> (defn valid? [age]
+         (if (or (< age 0) (> age 129))
+          true
+          false))
 ```
 
 ## Pack
 
-Most ideas based on Clojure
+- Most ideas based on Clojure
 
 ### Non-trivial features:
 
@@ -60,10 +88,371 @@ Most ideas based on Clojure
 <!-- -->
 
 
-## Some Code
+## Pack - Some Code
 
-<!--  -->
+_A small demo occurs_ 😱
 
+<!-- See wc-example and flask-example -->
+
+## Parsing
+
+```python
+def read_***(input_text):
+    ...
+    return parsed_***, remaining_text
+```
+. . .
+
+```python
+>>> from pack.interp import read_num
+>>> read_num('1 1 2 3 5 8 13')
+(1, ' 1 2 3 5 8 13')
+```
+
+
+## Parsing - Identifiers
+
+```python
+def is_ident_start(c):
+    return (
+        'a' <= c <= 'z'
+        or 'A' <= c <= 'Z'
+        or c in ('+', '-', '*', '/', '<', '>', '!', '=', '&', '_', '.', '?')
+        or '🌀' <= c <= '🫸'
+    )
+
+
+def is_ident(c):
+    return is_ident_start(c) or (c in ("'")) or '0' <= c <= '9'
+
+
+def read_ident(text):
+    i = 0
+    for c in text:
+        if is_ident(c):
+            i += 1
+        else:
+            break
+
+    return split_ident(text[:i]), text[i:]
+```
+
+
+## Parsing - Reading Lists
+
+```python
+def try_read(text):
+    if text == '':
+        return Reader.NOTHING, text
+    c = text[0]
+    ...  # eat whitespace
+    c1 = text[1] if text[1:] else ''
+    match c:
+        case '(' | '[' | '{':
+            return read_list(c, text[1:], closer[c])
+        case ')' | ']' | '}':
+            raise Unmatched(c, text[1:], location_from(text))
+    ...
+```
+
+## Parsing - Reading Lists
+
+```python
+def read_list(opener, text, closing):
+    remaining = text
+    elements = []
+    while True:
+        try:
+            elem, remaining = try_read(remaining)
+            elements.append(elem)
+        except Unmatched as unmatched:
+            if unmatched.c == closing:
+                return close_sequence(opener, elements), unmatched.remaining
+            else:
+                ... # raise syntax error
+```
+
+## Parsing - Reading Lists
+
+```python
+def read_list(opener, text, closing):
+    remaining = text
+    elements = []
+    while True:
+        try:
+            elem, remaining = try_read(remaining)
+            if elem is Reader.NOTHING:
+                raise Unclosed(opener, location_from(text))
+            else:
+                elements.append(elem)
+        except Unmatched as unmatched:
+            if unmatched.c == closing:
+                return close_sequence(opener, elements), unmatched.remaining
+            else:
+                ... # raise syntax error
+```
+
+## ~~Parsing~~ _Reading_ - Putting it together
+
+```python
+def try_read(text):
+    if text == '':
+        return Reader.NOTHING, text
+    c = text[0]
+    ...  # eat whitespace
+    c1 = text[1] if text[1:] else ''
+    match c:
+        case '(' | '[' | '{':
+            return read_list(c, text[1:], closer[c])
+        case ')' | ']' | '}':
+            raise Unmatched(c, text[1:], location_from(text))
+        case "'":
+            return read_quoted(text[1:])
+        case '-' | '+' if '0' <= c1 <= '9':
+            return read_num(text[1:], c)
+        case n if '0' <= n <= '9':
+            return read_num(text)
+        case '"':
+            return read_str(text)
+        case ':':
+            return read_keyword(text)
+        case s if is_ident(s):
+            return read_sym(text)
+    raise NotImplementedError(c)
+```
+
+##
+
+```clojure
+user=> (def map
+  (fn map [f xs]
+    (let* [fcons
+           (fn [x ys]
+             (cons (f x) ys)]]
+             (foldr fcons '() xs))))
+
+SyntaxError("trying to close a '(' with a ']'")
+Unmatched(')')
+```
+
+. . .
+
+Can you spot where the problem is? 🔍
+
+. . .
+
+I think we need to improve these errors 🤦
+
+
+## How NOT to implement error handling
+
+- Start by ignoring error handling - it delays the fun
+- Run into errors developing
+- subclass the builtin python `str` class
+
+
+## FileString
+
+```python
+>>> from pack.reader import FileString
+>>> fs = FileString("hello", "a.txt", 1, 0)
+>>> fs
+a.txt:1:0 'hello'
+```
+
+. . .
+
+```python
+>>> fs = FileString("African violet\nApple blossom\nCamelia", "flowers.txt", 1, 0)
+>>> fs
+flowers.txt:1:0 'African violet\nApple blossom\nCamelia'
+>>> fs[10:]
+flowers.txt:1:10 'olet\nApple blossom\nCamelia'
+>>> fs[20:]
+flowers.txt:2:5 ' blossom\nCamelia'
+>>> fs[30:]
+flowers.txt:3:1 'amelia'
+```
+
+## FileString - How?
+
+- `str` is immutable - so we must override `__new__` as well as `__init__`
+- `s[i:]` - track `'\n'` s between `0` and `i` when the string is sliced
+
+```python
+class FileString(str):
+    """A string that knows where it came from in a file"""
+
+    def __new__(cls, s, file, lineno, col):
+        obj = super().__new__(cls, s)
+        obj.__init__(s, file, lineno, col)
+        return obj
+
+    def __init__(self, s, file, lineno, col):
+        ...  # boilerplate init with super().__init__ call and field setting
+
+    def __getitem__(self, idx):
+        if isinstance(idx, slice):
+            ... # see '\n', increment lineno, reset col
+            return self.__class__(
+                super().__getitem__(idx), self.file, lineno, col
+            )
+        return super().__getitem__(idx)
+```
+
+## FileString - Problems we might run into
+
+We might want to use `repr` to get correct quoting generating code.
+
+```python
+    exec(txt, globals, ns)
+  File "<string>", line 3
+    return __Sym(None, /Users/daniel/src/python/pack-lang/pack/core.pack:110:11 'do')
+                       ^
+SyntaxError: invalid syntax
+```
+
+##
+
+![_Pipeline_](compilation-stages.svg)
+
+
+## Match Case - What does this buy us?
+
+TODO: write an example from the compiler without using match/case
+  and compare
+
+## Match Case - Can you spot the bug?
+
+<!-- The first case in the lower match   -->
+<!-- Case statements do not fall through -->
+
+```python
+def nest_loop_in_recursive_fn(expr):
+    def contains_recur(expr):
+        ...
+
+    match expr:
+        case Cons(Sym(None, 'fn'), Cons(params, Cons(body, Nil()))):
+            if contains_recur(body):
+                loop = Cons(Sym(None, 'loop'),
+                            Cons(Vec.from_iter(untake_pairs(zip(params, params))),
+                                 Cons(body, nil)))
+                return Cons(Sym(None, 'fn'),
+                            Cons(params,
+                                 Cons(loop, nil)))
+        case other:
+            return other
+```
+
+## Match Case Pitfalls
+
+* Easy to forget a positional argument when matching dataclasses
+* Easy to accidentally return None:
+  * Have a default case or return an error
+  * Start writing the function with a `raise NotImplementedError` at the bottom
+  * Use `typing.NoReturn` or (new in python 3.11) `typing.Never`
+* The ordering of case statements matters a lot
+* `[ ... ]` matches any sequence, not just lists
+* Not possible to factor out constants
+
+
+Failover cases look nice, but lead to errors
+
+
+## Recursion Schemes
+
+
+## This needs to 
+
+rewriting to use a single pass
+
+```python
+def convert_if_expr_to_stmt(i=0):
+    def next_temp(prefix=""):
+        nonlocal i
+        i += 1
+        return Sym(None, f'{prefix}__t.{i}')
+
+    fst = lambda pair: pair[0]
+    snd = lambda pair: pair[1]
+
+    def alg(expr):
+        """
+        ExprF[(ExprF, contains_stmt: Bool)] -> (ExprF, contains_stmt: Bool)
+        """
+        match expr:
+            # c1 and c2 are whether those arms of the if expression
+            # contain any statements - as calculated in the default
+            # case
+            case IfExpr((pred, _), (con, c1), (alt, c2)) if c1 or c2:
+                t = next_temp()
+                # statement hoisting will clean this up
+                return Do((
+                    IfStmt(pred,
+                           con if is_stmt(con) else SetBang(t, con),
+                           alt if is_stmt(alt) else SetBang(t, alt)),
+                ), t), True
+            case other:
+                contains = reduce_ir(False, operator.or_, fmap_ir(snd, other))
+                return (fmap_ir(fst, other), contains or is_stmt(other))
+        assert False
+    return alg
+```
+
+then realise we can use zygomorphism to remove most of this
+base case
+
+
+## Future Work / Ideas
+-
+- ~Finish compilation (i.e. transpilation) pipeline~
+- python keyword argument compatibility
+
+## Recursion Schemes - Resources
+
+### Useful resources
+
+- <https://github.com/sellout/recursion-scheme-talk>
+- <https://github.com/precog/matryoshka>
+
+
+## Source Code
+
+### Pack Itself
+
+- <https://github.com/cakemanny/pack-lang>
+
+### This Talk
+
+- <https://github.com/cakemanny/talks>
+
+
+## `IndexError: slide index out of range`
+
+::: Warning
+_rejected material_
+:::
+
+
+## _DEADLYSIGNAL_
+
+```
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==41284==ERROR: AddressSanitizer: stack-overflow on address 0x00016724ffc0 (pc 0x000104fe04c0 bp 0x000167250090 sp 0x00016724ffb0 T0)
+    #0 0x104fe04c0 in __sanitizer::StackDepotBase<__sanitizer::StackDepotNode, 1, 20>::Put(__sanitizer::StackTrace, bool*)+0x8 (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x644c0)
+    #1 0x104f7f17c in __asan::asan_malloc(unsigned long, __sanitizer::BufferedStackTrace*)+0x2c (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x317c)
+    #2 0x104fbad0c in wrap_malloc+0xf8 (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x3ed0c)
+    #3 0x104bb7d8c in ml_gc_alloc+0x288 (a.out:arm64+0x100003d8c)
+    #4 0x104bb75d0 in go__1+0x20 (a.out:arm64+0x1000035d0)
+
+SUMMARY: AddressSanitizer: stack-overflow (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x644c0) in __sanitizer::StackDepotBase<__sanitizer::StackDepotNode, 1, 20>::Put(__sanitizer::StackTrace, bool*)+0x8
+==41284==ABORTING
+tests: line 42: 41284 Abort trap: 6           ./a.out
+```
+
+## Rejected Material
 
 ## Syntax - Symbols
 
@@ -83,6 +472,17 @@ Most ideas based on Clojure
 ;      ^
 ;       \ dots make directories
 ```
+
+```clojure
+user=> (def 🤦 5)
+#'user/🤦
+user=> 🤦
+5
+user=> (+ 🤦 5)
+10
+```
+
+
 
 ## Data Structures
 
@@ -257,173 +657,4 @@ True
 ```clojure
 ```
 
-## Parsing
 
-```python
-def read_***(input_text):
-    ...
-    return parsed_***, remaining_text
-```
-
-
-## Parsing
-
-```python
-def read_***(input_text):
-    ...
-    return parsed_***, remaining_text
-```
-
-```python
->>> from pack.interp import read_num
->>> read_num('1 1 2 3 5 8 13')
-(1, ' 1 2 3 5 8 13')
-```
-
-
-## Parsing - Identifiers
-
-```python
-def is_ident_start(c):
-    return (
-        'a' <= c <= 'z'
-        or 'A' <= c <= 'Z'
-        or c in ('+', '-', '*', '/', '<', '>', '!', '=', '&', '_', '.', '?')
-        or '🌀' <= c <= '🫸'
-    )
-
-
-def is_ident(c):
-    return is_ident_start(c) or (c in ("'")) or '0' <= c <= '9'
-
-
-def read_ident(text):
-    i = 0
-    for c in text:
-        if is_ident(c):
-            i += 1
-        else:
-            break
-
-    return split_ident(text[:i]), text[i:]
-```
-
-## How NOT to implement error handling
-
-- Start by ignoring error handling - it delays the fun
-- Run into errors developing
-- subclass the builtin python `str` class
-
-
-## FileString
-
-...
-
-
-## Match Case - What does this buy us?
-
-TODO: write an example from the compiler without using match/case
-  and compare
-
-## Match Case - Can you spot the bug?
-
-<!-- The first case in the lower match   -->
-<!-- Case statements do not fall through -->
-
-```python
-def nest_loop_in_recursive_fn(expr):
-    def contains_recur(expr):
-        ...
-
-    match expr:
-        case Cons(Sym(None, 'fn'), Cons(params, Cons(body, Nil()))):
-            if contains_recur(body):
-                loop = Cons(Sym(None, 'loop'),
-                            Cons(Vec.from_iter(untake_pairs(zip(params, params))),
-                                 Cons(body, nil)))
-                return Cons(Sym(None, 'fn'),
-                            Cons(params,
-                                 Cons(loop, nil)))
-        case other:
-            return other
-```
-
-## Match Case Pitfalls
-
-* Easy to forget a positional argument when matching dataclasses
-* Easy to accidentally return None:
-  * Have a default case or return an error
-  * Start writing the function with a `raise NotImplementedError` at the bottom
-  * Use `typing.NoReturn` or (new in python 3.11) `typing.Never`
-* The ordering of case statements matters a lot
-* [] match sequences, not lists
-* Not possible to factor out constants
-
-
-Failover cases look nice, but lead to errors
-
-
-## Recursion Schemes
-
-
-rewriting to use a single pass
-
-```python
-def convert_if_expr_to_stmt(i=0):
-    def next_temp(prefix=""):
-        nonlocal i
-        i += 1
-        return Sym(None, f'{prefix}__t.{i}')
-
-    fst = lambda pair: pair[0]
-    snd = lambda pair: pair[1]
-
-    def alg(expr):
-        """
-        ExprF[(ExprF, contains_stmt: Bool)] -> (ExprF, contains_stmt: Bool)
-        """
-        match expr:
-            # c1 and c2 are whether those arms of the if expression
-            # contain any statements - as calculated in the default
-            # case
-            case IfExpr((pred, _), (con, c1), (alt, c2)) if c1 or c2:
-                t = next_temp()
-                # statement hoisting will clean this up
-                return Do((
-                    IfStmt(pred,
-                           con if is_stmt(con) else SetBang(t, con),
-                           alt if is_stmt(alt) else SetBang(t, alt)),
-                ), t), True
-            case other:
-                contains = reduce_ir(False, operator.or_, fmap_ir(snd, other))
-                return (fmap_ir(fst, other), contains or is_stmt(other))
-        assert False
-    return alg
-```
-
-then realise we can use zygomorphism to remove most of this
-base case
-
-
-## Future Work / Ideas
--
-- ~Finish compilation (i.e. transpilation) pipeline~
-- python keyword argument compatibility
-
-## Recursion Schemes - Resources
-
-### Useful resources
-
-- <https://github.com/sellout/recursion-scheme-talk>
-- <https://github.com/precog/matryoshka>
-
-
-## Source Code
-
-### Pack Itself
-
-- <https://github.com/cakemanny/pack-lang>
-
-### This Talk
-
-- <https://github.com/cakemanny/talks>

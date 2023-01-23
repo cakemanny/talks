@@ -1,0 +1,50 @@
+digraph G {
+	fontname="Helvetica,Arial,sans-serif"
+	node [fontname="Helvetica,Arial,sans-serif"]
+	edge [fontname="Helvetica,Arial,sans-serif"]
+
+	subgraph cluster_0 {
+		style=filled;
+		color=lightgrey;
+		node [style=filled,color=white];
+		a0[label="read forms"];
+		a1[label="expand quasi-quotes"];
+		a2[label="expand macros"];
+		a3[label="validate special form syntax"];
+		a4[label="create defs"];
+		a5[label="evaluate top level forms"];
+		a6[label="evaluate expressions"];
+		a7[label="evaluate arguments and call function"]
+		a0 -> a1 -> a2 -> a3 -> a4 -> a5 -> a6 -> a7;
+		a2 -> a7;
+		a7 -> a2;
+		label = "Interpretation";
+	}
+
+	subgraph cluster_1 {
+		node [style=filled];
+		b0[label="extract closure"];
+		b1[label="deduce scope"];
+		b2[label="replace complex quoted data"];
+		b3[label="replace data literals"];
+		b4[label="hoist lambdas"];
+		b5[label="resolve qualified symbols"];
+		b6[label="nest loop within recursive fn"];
+		b7[label="replace loop/recur with while"];
+		b8[label="convert to intermedate"];
+		b9[label="convert 'if' expression -> statement"];
+		b10[label="hoist statements"];
+		b11[label="place return"];
+		b12[label="convert to python"];
+		b0 -> b1 -> b2 -> b3 -> b4 -> b5 -> b6 -> b7 -> b8 -> b9 -> b10 -> b11 -> b12;
+		label = "Function Compilation";
+		color=blue
+	}
+	start [shape="none", label=""];
+	start -> a0[arrowhead=none, color=lightgrey];
+	start -> b0[arrowhead=none, color=white];
+
+	a6 -> b0;
+	b12 -> a7;
+}
+
