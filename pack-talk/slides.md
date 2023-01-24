@@ -70,10 +70,11 @@ user=> (+ (* 2 4) (* 6 8))
 
 ### In a LISP we might say...
 ```clojure
-user=> (defn valid? [age]
-         (if (or (< age 0) (> age 129))
-          true
-          false))
+user=> (def valid?
+         (fn [age]
+          (if (or (< age 0) (> age 129))
+           true
+           false)))
 ```
 
 ## Pack
@@ -302,7 +303,7 @@ class FileString(str):
 
 ## FileString - Problems we might run into
 
-We might want to use `repr` to get correct quoting generating code.
+We might want to use `repr` to get correct quoting, generating code.
 
 ```python
     exec(txt, globals, ns)
@@ -310,6 +311,31 @@ We might want to use `repr` to get correct quoting generating code.
     return __Sym(None, /Users/daniel/src/python/pack-lang/pack/core.pack:110:11 'do')
                        ^
 SyntaxError: invalid syntax
+```
+
+## So what have we done so far
+
+```python
+>>> from pack.reader import read_all_forms
+>>> read_all_forms("(def valid? (fn [age] (if (or (< age 0) (> age 129)) true false)))")[0]
+Cons(hd=Sym(ns=None, n='def'),
+     tl=Cons(hd=Sym(ns=None, n='valid?'),
+             tl=Cons(hd=Cons(hd=Sym(ns=None, n='fn'),
+                             tl=Cons(hd=Vec(xs=(Sym(ns=None, n='age'),), height=0),
+                                     tl=Cons(hd=Cons(hd=Sym(ns=None, n='if'),
+                                                     tl=Cons(hd=Cons(hd=Sym(ns=None, n='or'),
+                                                                     tl=Cons(hd=Cons(hd=Sym(ns=None, n='<'),
+                                                                                     tl=Cons(hd=Sym(ns=None, n='age'),
+                                                                                             tl=Cons(hd=0, tl=Nil()))),
+                                                                             tl=Cons(hd=Cons(hd=Sym(ns=None, n='>'),
+                                                                                             tl=Cons(hd=Sym(ns=None, n='age'),
+                                                                                                     tl=Cons(hd=129, tl=Nil()))),
+                                                                                     tl=Nil()))),
+                                                             tl=Cons(hd=True,
+                                                                     tl=Cons(hd=False,
+                                                                             tl=Nil())))),
+                                             tl=Nil()))),
+                     tl=Nil())))
 ```
 
 ##
@@ -429,28 +455,6 @@ base case
 
 
 ## `IndexError: slide index out of range`
-
-::: Warning
-_rejected material_
-:::
-
-
-## _DEADLYSIGNAL_
-
-```
-AddressSanitizer:DEADLYSIGNAL
-=================================================================
-==41284==ERROR: AddressSanitizer: stack-overflow on address 0x00016724ffc0 (pc 0x000104fe04c0 bp 0x000167250090 sp 0x00016724ffb0 T0)
-    #0 0x104fe04c0 in __sanitizer::StackDepotBase<__sanitizer::StackDepotNode, 1, 20>::Put(__sanitizer::StackTrace, bool*)+0x8 (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x644c0)
-    #1 0x104f7f17c in __asan::asan_malloc(unsigned long, __sanitizer::BufferedStackTrace*)+0x2c (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x317c)
-    #2 0x104fbad0c in wrap_malloc+0xf8 (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x3ed0c)
-    #3 0x104bb7d8c in ml_gc_alloc+0x288 (a.out:arm64+0x100003d8c)
-    #4 0x104bb75d0 in go__1+0x20 (a.out:arm64+0x1000035d0)
-
-SUMMARY: AddressSanitizer: stack-overflow (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x644c0) in __sanitizer::StackDepotBase<__sanitizer::StackDepotNode, 1, 20>::Put(__sanitizer::StackTrace, bool*)+0x8
-==41284==ABORTING
-tests: line 42: 41284 Abort trap: 6           ./a.out
-```
 
 ## Rejected Material
 
