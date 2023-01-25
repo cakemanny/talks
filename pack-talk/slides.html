@@ -1,0 +1,1252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Daniel Golding" />
+  <title>Pack - A Lisp in Python</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Pack - A Lisp in Python</h1>
+  <p class="author">
+Daniel Golding
+  </p>
+  <p class="date">26 Jan 2023</p>
+</div>
+<div id="agenda" class="slide section level2">
+<h1>Agenda</h1>
+<!--
+Ideas
+- show multiple slides for showing macro expansion
+
+-->
+<ul>
+<li>A quick intro to LISP for the unfamiliar</li>
+<li>We talk about how we can interpret a lisp in Python</li>
+<li>We’ll write an expression evaluator and find out the traps of match
+case</li>
+</ul>
+<div class="incremental">
+<ul>
+<li>Do interrupt and ask questions. That way we’ll all get more out of
+it.</li>
+</ul>
+</div>
+</div>
+<div id="lisp---a-quick-intro-for-people-who-have-not-seen-it"
+class="slide section level2">
+<h1>LISP - A quick intro for people who have not seen it</h1>
+<ul>
+<li>Created by John McCarthy in 1960</li>
+<li>There are many dialects
+<ul>
+<li>Scheme <!-- Chez Scheme, Racket, ... --></li>
+<li>Common Lisp</li>
+<li>Clojure</li>
+<li>Emacs Lisp <!-- TODO check name --></li>
+</ul></li>
+<li>Everything is an s-expression.
+<ul>
+<li>Lists starting with <code>(</code> and ending with
+<code>)</code></li>
+</ul></li>
+<li>The first item at the beginning on the list is the function
+name</li>
+</ul>
+</div>
+<div id="lisp---a-quick-intro-for-people-who-have-not-seen-it-1"
+class="slide section level2">
+<h1>LISP - A quick intro for people who have not seen it</h1>
+<h3 id="in-python-we-say">In Python we say…</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="dv">1</span> <span class="op">+</span> <span class="dv">2</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="dv">2</span> <span class="op">*</span> <span class="dv">4</span> <span class="op">+</span> <span class="dv">6</span> <span class="op">*</span> <span class="dv">8</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dv">56</span></span></code></pre></div>
+<h3 id="in-a-lisp-we-say">In a LISP we say…</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>user=&gt; (<span class="kw">+</span> <span class="dv">1</span> <span class="dv">2</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>user=&gt; (<span class="kw">+</span> (<span class="kw">*</span> <span class="dv">2</span> <span class="dv">4</span>) (<span class="kw">*</span> <span class="dv">6</span> <span class="dv">8</span>))</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dv">56</span></span></code></pre></div>
+</div>
+<div id="lisp---a-quick-intro-for-people-who-have-not-seen-it-2"
+class="slide section level2">
+<h1>LISP - A quick intro for people who have not seen it</h1>
+<h3 id="in-python-we-say-1">In Python we say…</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="kw">def</span> is_valid(age):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>...     <span class="cf">if</span> age <span class="op">&lt;</span> <span class="dv">0</span> <span class="kw">or</span> age <span class="op">&gt;</span> <span class="dv">129</span>:</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>...         <span class="cf">return</span> <span class="va">True</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>...     <span class="cf">return</span> <span class="va">False</span></span></code></pre></div>
+<h3 id="in-a-lisp-we-might-say">In a LISP we might say…</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>user=&gt; (<span class="bu">def</span><span class="fu"> valid?</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>         (<span class="kw">fn</span> [age]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>          (<span class="kw">if</span> (<span class="kw">or</span> (<span class="kw">&lt;</span> age <span class="dv">0</span>) (<span class="kw">&gt;</span> age <span class="dv">129</span>))</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>           <span class="va">true</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>           <span class="va">false</span>)))</span></code></pre></div>
+</div>
+<div id="pack" class="slide section level2">
+<h1>Pack</h1>
+<ul>
+<li>Most ideas based on Clojure</li>
+<li>Namespaces</li>
+<li>Macros</li>
+<li>Python interop …</li>
+</ul>
+<!-- -->
+</div>
+<div id="pack---some-code" class="slide section level2">
+<h1>Pack - Some Code</h1>
+<p><em>A small demo occurs</em> 😱</p>
+<!-- See wc-example and flask-example -->
+</div>
+<div id="section" class="slide section level2">
+<h1></h1>
+<p>So…. how do we go about writing a LISP interpreter</p>
+</div>
+<div id="parsing" class="slide section level2">
+<h1>Parsing</h1>
+<p>The nice thing about LISP, is that it’s almost entirely
+unambigous.</p>
+<pre><code>(1 2 3)
+^</code></pre>
+<p>It’s a list</p>
+<pre><code>&quot;hello&quot;
+^</code></pre>
+<p>It’s a string</p>
+<div class="incremental">
+<pre><code>(- b a)
+ -10
+ ^</code></pre>
+<p>Will it be a number or the minus symbol?</p>
+</div>
+</div>
+<div id="parsing-1" class="slide section level2">
+<h1>Parsing</h1>
+<ul>
+<li>Once we’ve decided what we want to start parsing form, we continue
+until it has ended.</li>
+<li>We can write small functions that take an</li>
+</ul>
+<pre><code>str -&gt; (Form, str)</code></pre>
+</div>
+<div id="parsing-2" class="slide section level2">
+<h1>Parsing</h1>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> read_<span class="op">***</span>(input_text):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    ...</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> parsed_<span class="op">***</span>, remaining_text</span></code></pre></div>
+<div class="incremental">
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> pack.interp <span class="im">import</span> read_num</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> read_num(<span class="st">&#39;1 1 2 3 5 8 13&#39;</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>, <span class="st">&#39; 1 2 3 5 8 13&#39;</span>)</span></code></pre></div>
+</div>
+</div>
+<div id="parsing-3" class="slide section level2">
+<h1>Parsing</h1>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> read_num(text, prefix<span class="op">=</span><span class="st">&#39;&#39;</span>):</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    i <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c <span class="kw">in</span> text:</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="st">&#39;0&#39;</span> <span class="op">&lt;=</span> c <span class="op">&lt;=</span> <span class="st">&#39;9&#39;</span>:</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>            i <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">int</span>(prefix <span class="op">+</span> text[:i]), text[i:]</span></code></pre></div>
+</div>
+<div id="parsing---identifiers" class="slide section level2">
+<h1>Parsing - Identifiers</h1>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_ident_start(c):</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">&#39;a&#39;</span> <span class="op">&lt;=</span> c <span class="op">&lt;=</span> <span class="st">&#39;z&#39;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>        <span class="kw">or</span> <span class="st">&#39;A&#39;</span> <span class="op">&lt;=</span> c <span class="op">&lt;=</span> <span class="st">&#39;Z&#39;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        <span class="kw">or</span> c <span class="kw">in</span> (<span class="st">&#39;+&#39;</span>, <span class="st">&#39;-&#39;</span>, <span class="st">&#39;*&#39;</span>, <span class="st">&#39;/&#39;</span>, <span class="st">&#39;&lt;&#39;</span>, <span class="st">&#39;&gt;&#39;</span>, <span class="st">&#39;!&#39;</span>, <span class="st">&#39;=&#39;</span>, <span class="st">&#39;&amp;&#39;</span>, <span class="st">&#39;_&#39;</span>, <span class="st">&#39;.&#39;</span>, <span class="st">&#39;?&#39;</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">or</span> <span class="st">&#39;🌀&#39;</span> <span class="op">&lt;=</span> c <span class="op">&lt;=</span> <span class="st">&#39;🫸&#39;</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_ident(c):</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> is_ident_start(c) <span class="kw">or</span> (c <span class="kw">in</span> (<span class="st">&quot;&#39;&quot;</span>)) <span class="kw">or</span> <span class="st">&#39;0&#39;</span> <span class="op">&lt;=</span> c <span class="op">&lt;=</span> <span class="st">&#39;9&#39;</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> read_ident(text):</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    i <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c <span class="kw">in</span> text:</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> is_ident(c):</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>            i <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> split_ident(text[:i]), text[i:]</span></code></pre></div>
+</div>
+<div id="parsing---reading-lists" class="slide section level2">
+<h1>Parsing - Reading Lists</h1>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> try_read(text):</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> text <span class="op">==</span> <span class="st">&#39;&#39;</span>:</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Reader.NOTHING, text</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    c <span class="op">=</span> text[<span class="dv">0</span>]</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    ...  <span class="co"># eat whitespace</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    c1 <span class="op">=</span> text[<span class="dv">1</span>] <span class="cf">if</span> text[<span class="dv">1</span>:] <span class="cf">else</span> <span class="st">&#39;&#39;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> c:</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&#39;(&#39;</span> <span class="op">|</span> <span class="st">&#39;[&#39;</span> <span class="op">|</span> <span class="st">&#39;{&#39;</span>:</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> read_list(c, text[<span class="dv">1</span>:], closer[c])</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&#39;)&#39;</span> <span class="op">|</span> <span class="st">&#39;]&#39;</span> <span class="op">|</span> <span class="st">&#39;}&#39;</span>:</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> Unmatched(c, text[<span class="dv">1</span>:], location_from(text))</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    ...</span></code></pre></div>
+</div>
+<div id="parsing---reading-lists-1" class="slide section level2">
+<h1>Parsing - Reading Lists</h1>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> read_list(opener, text, closing):</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    remaining <span class="op">=</span> text</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    elements <span class="op">=</span> []</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>            elem, remaining <span class="op">=</span> try_read(remaining)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>            elements.append(elem)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> Unmatched <span class="im">as</span> unmatched:</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> unmatched.c <span class="op">==</span> closing:</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span> close_sequence(opener, elements), unmatched.remaining</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>                ... <span class="co"># raise syntax error</span></span></code></pre></div>
+</div>
+<div id="parsing---reading-lists-2" class="slide section level2">
+<h1>Parsing - Reading Lists</h1>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> read_list(opener, text, closing):</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    remaining <span class="op">=</span> text</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    elements <span class="op">=</span> []</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>            elem, remaining <span class="op">=</span> try_read(remaining)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> elem <span class="kw">is</span> Reader.NOTHING:</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>                <span class="cf">raise</span> Unclosed(opener, location_from(text))</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>                elements.append(elem)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> Unmatched <span class="im">as</span> unmatched:</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> unmatched.c <span class="op">==</span> closing:</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span> close_sequence(opener, elements), unmatched.remaining</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>                ... <span class="co"># raise syntax error</span></span></code></pre></div>
+</div>
+<div id="parsing--" class="slide section level2">
+<h1>Parsing - …</h1>
+<p>Don’t forget</p>
+<ul>
+<li>Numbers</li>
+<li>Strings</li>
+<li>Keywords</li>
+<li>Comments</li>
+<li>Quoted Forms</li>
+<li>Quasi-quoted Forms</li>
+</ul>
+</div>
+<div id="parsing-reading---putting-it-together"
+class="slide section level2">
+<h1><del>Parsing</del> <em>Reading</em> - Putting it together</h1>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> try_read(text):</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> text <span class="op">==</span> <span class="st">&#39;&#39;</span>:</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Reader.NOTHING, text</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    c <span class="op">=</span> text[<span class="dv">0</span>]</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    ...  <span class="co"># eat whitespace</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    c1 <span class="op">=</span> text[<span class="dv">1</span>] <span class="cf">if</span> text[<span class="dv">1</span>:] <span class="cf">else</span> <span class="st">&#39;&#39;</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> c:</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&#39;(&#39;</span> <span class="op">|</span> <span class="st">&#39;[&#39;</span> <span class="op">|</span> <span class="st">&#39;{&#39;</span>:</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> read_list(c, text[<span class="dv">1</span>:], closer[c])</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&#39;)&#39;</span> <span class="op">|</span> <span class="st">&#39;]&#39;</span> <span class="op">|</span> <span class="st">&#39;}&#39;</span>:</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> Unmatched(c, text[<span class="dv">1</span>:], location_from(text))</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&quot;&#39;&quot;</span>:</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> read_quoted(text[<span class="dv">1</span>:])</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&#39;-&#39;</span> <span class="op">|</span> <span class="st">&#39;+&#39;</span> <span class="cf">if</span> <span class="st">&#39;0&#39;</span> <span class="op">&lt;=</span> c1 <span class="op">&lt;=</span> <span class="st">&#39;9&#39;</span>:</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> read_num(text[<span class="dv">1</span>:], c)</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> n <span class="cf">if</span> <span class="st">&#39;0&#39;</span> <span class="op">&lt;=</span> n <span class="op">&lt;=</span> <span class="st">&#39;9&#39;</span>:</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> read_num(text)</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&#39;&quot;&#39;</span>:</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> read_str(text)</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&#39;:&#39;</span>:</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> read_keyword(text)</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> s <span class="cf">if</span> is_ident(s):</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> read_sym(text)</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">NotImplementedError</span>(c)</span></code></pre></div>
+</div>
+<div id="section-1" class="slide section level2">
+<h1></h1>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>user=&gt; (<span class="bu">def</span><span class="fu"> map</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">fn</span> <span class="kw">map</span> [f xs]</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    (let* [fcons</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>           (<span class="kw">fn</span> [x ys]</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>             (<span class="kw">cons</span> (f x) ys)]]</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>             (foldr fcons &#39;() xs))))</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>SyntaxError(<span class="st">&quot;trying to close a &#39;(&#39; with a &#39;]&#39;&quot;</span>)</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>Unmatched(&#39;)&#39;)</span></code></pre></div>
+<div class="incremental">
+<p>Can you spot where the problem is? 🔍</p>
+</div>
+<div class="incremental">
+<p>I think we need to improve these errors 🤦</p>
+</div>
+</div>
+<div id="how-not-to-implement-error-handling"
+class="slide section level2">
+<h1>How NOT to implement error handling</h1>
+<ul>
+<li>Start by ignoring error handling - it delays the fun</li>
+<li>Run into errors developing</li>
+<li>subclass the builtin python <code>str</code> class</li>
+</ul>
+</div>
+<div id="filestring" class="slide section level2">
+<h1>FileString</h1>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> pack.reader <span class="im">import</span> FileString</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fs <span class="op">=</span> FileString(<span class="st">&quot;hello&quot;</span>, <span class="st">&quot;a.txt&quot;</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fs</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>a.txt:<span class="dv">1</span>:<span class="dv">0</span> <span class="st">&#39;hello&#39;</span></span></code></pre></div>
+<div class="incremental">
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fs <span class="op">=</span> FileString(<span class="st">&quot;African violet</span><span class="ch">\n</span><span class="st">Apple blossom</span><span class="ch">\n</span><span class="st">Camelia&quot;</span>, <span class="st">&quot;flowers.txt&quot;</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fs</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>flowers.txt:<span class="dv">1</span>:<span class="dv">0</span> <span class="st">&#39;African violet</span><span class="ch">\n</span><span class="st">Apple blossom</span><span class="ch">\n</span><span class="st">Camelia&#39;</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fs[<span class="dv">10</span>:]</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>flowers.txt:<span class="dv">1</span>:<span class="dv">10</span> <span class="st">&#39;olet</span><span class="ch">\n</span><span class="st">Apple blossom</span><span class="ch">\n</span><span class="st">Camelia&#39;</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fs[<span class="dv">20</span>:]</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>flowers.txt:<span class="dv">2</span>:<span class="dv">5</span> <span class="st">&#39; blossom</span><span class="ch">\n</span><span class="st">Camelia&#39;</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fs[<span class="dv">30</span>:]</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>flowers.txt:<span class="dv">3</span>:<span class="dv">1</span> <span class="st">&#39;amelia&#39;</span></span></code></pre></div>
+</div>
+</div>
+<div id="filestring---how" class="slide section level2">
+<h1>FileString - How?</h1>
+<ul>
+<li><code>str</code> is immutable - so we must override
+<code>__new__</code> as well as <code>__init__</code></li>
+<li><code>s[i:]</code> - track <code>'\n'</code> s between
+<code>0</code> and <code>i</code> when the string is sliced</li>
+</ul>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FileString(<span class="bu">str</span>):</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;A string that knows where it came from in a file&quot;&quot;&quot;</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__new__</span>(cls, s, <span class="bu">file</span>, lineno, col):</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>        obj <span class="op">=</span> <span class="bu">super</span>().<span class="fu">__new__</span>(cls, s)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>        obj.<span class="fu">__init__</span>(s, <span class="bu">file</span>, lineno, col)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> obj</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, s, <span class="bu">file</span>, lineno, col):</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>        ...  <span class="co"># boilerplate init with super().__init__ call and field setting</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__getitem__</span>(<span class="va">self</span>, idx):</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">isinstance</span>(idx, <span class="bu">slice</span>):</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>            ... <span class="co"># see &#39;\n&#39;, increment lineno, reset col</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">self</span>.__class__(</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>                <span class="bu">super</span>().<span class="fu">__getitem__</span>(idx), <span class="va">self</span>.<span class="bu">file</span>, lineno, col</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">super</span>().<span class="fu">__getitem__</span>(idx)</span></code></pre></div>
+</div>
+<div id="filestring---what-have-we-gained" class="slide section level2">
+<h1>FileString - What have we gained?</h1>
+<p>We can now find our mistake!</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>user=&gt; (<span class="bu">def</span><span class="fu"> map</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">fn</span> <span class="kw">map</span> [f xs]</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    (let* [fcons</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>           (<span class="kw">fn</span> [x ys]</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>             (<span class="kw">cons</span> (f x) ys)]]</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>             (foldr fcons &#39;() xs))))</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>SyntaxError(<span class="st">&quot;trying to close a &#39;(&#39; with a &#39;]&#39;&quot;</span>, (<span class="at">&#39;&lt;stdin&gt;&#39;,</span> <span class="dv">5</span>, <span class="dv">28</span>))</span></code></pre></div>
+</div>
+<div id="filestring---problems-we-might-run-into"
+class="slide section level2">
+<h1>FileString - Problems we might run into</h1>
+<p>The downside is that we need to defensively convert back to a
+<code>str</code> to get our normal string properties back later in the
+pipeline.</p>
+<p>We might want to use <code>repr</code> to get correct quoting,
+generating code.</p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>            <span class="cf">case</span> Quote(Sym(<span class="va">None</span>, n)):</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span> <span class="ss">f&#39;__Sym(None, </span><span class="sc">{</span>n<span class="sc">!r}</span><span class="ss">)&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exec</span>(txt, <span class="bu">globals</span>, ns)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  File <span class="st">&quot;&lt;string&gt;&quot;</span>, line <span class="dv">3</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> __Sym(<span class="va">None</span>, <span class="op">/</span>Users<span class="op">/</span>daniel<span class="op">/</span>src<span class="op">/</span>python<span class="op">/</span>pack<span class="op">-</span>lang<span class="op">/</span>pack<span class="op">/</span>core.pack:<span class="dv">110</span>:<span class="dv">11</span> <span class="st">&#39;do&#39;</span>)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>                       <span class="op">^</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="pp">SyntaxError</span>: invalid syntax</span></code></pre></div>
+<p>Fix:</p>
+<ul>
+<li><code
+class="sourceCode python"><span class="ss">f&#39;__Sym(None, </span><span class="sc">{</span>n<span class="sc">!r}</span><span class="ss">)&#39;</span></code>
+→ <code
+class="sourceCode python"><span class="ss">f&#39;__Sym(None, </span><span class="sc">{</span><span class="bu">str</span>(n)<span class="sc">!r}</span><span class="ss">)&#39;</span></code></li>
+</ul>
+</div>
+<div id="checkpoint---so-what-have-we-done-so-far"
+class="slide section level2">
+<h1>Checkpoint - So what have we done so far</h1>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> pack.reader <span class="im">import</span> read_all_forms</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> read_all_forms(<span class="st">&quot;(def valid? (fn [age] (if (or (&lt; age 0) (&gt; age 129)) true false)))&quot;</span>)[<span class="dv">0</span>]</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>Cons(Sym(<span class="va">None</span>, <span class="st">&#39;def&#39;</span>),</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>     Cons(Sym(<span class="va">None</span>, <span class="st">&#39;valid?&#39;</span>),</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>          Cons(Cons(Sym(<span class="va">None</span>, <span class="st">&#39;fn&#39;</span>),</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>                    Cons(Vec(xs<span class="op">=</span>(Sym(<span class="va">None</span>, <span class="st">&#39;age&#39;</span>),), height<span class="op">=</span><span class="dv">0</span>),</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>                         Cons(Cons(Sym(<span class="va">None</span>, <span class="st">&#39;if&#39;</span>),</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>                                   Cons(Cons(Sym(<span class="va">None</span>, <span class="st">&#39;or&#39;</span>),</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>                                             Cons(Cons(Sym(<span class="va">None</span>, <span class="st">&#39;&lt;&#39;</span>),</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>                                                       Cons(Sym(<span class="va">None</span>, <span class="st">&#39;age&#39;</span>),</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>                                                            Cons(<span class="dv">0</span>, Nil()))),</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>                                                  Cons(Cons(Sym(<span class="va">None</span>, <span class="st">&#39;&gt;&#39;</span>),</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>                                                            Cons(Sym(<span class="va">None</span>, <span class="st">&#39;age&#39;</span>),</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>                                                                 Cons(<span class="dv">129</span>, Nil()))),</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>                                                       Nil()))),</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>                                        Cons(<span class="va">True</span>,</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>                                             Cons(<span class="va">False</span>,</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>                                                  Nil())))),</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>                              Nil()))),</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>               Nil())))</span></code></pre></div>
+<p>Ok, we have a reader. How do we make it do… stuff?</p>
+</div>
+<div id="evaluating" class="slide section level2">
+<h1>Evaluating</h1>
+<p>Let’s evaluate a small subset of Pack</p>
+<pre><code>(~procedure ~arg1 ~arg2 ...)
+(fn [~p1 ~p2 ...] ~body)
+(if ~pred ~cons ~alt)</code></pre>
+<p>i.e. we should be able to evaluate all of these</p>
+<pre><code>(+ 1 2)
+(print &quot;λx.x&quot;)
+
+(fn [x y] ((+ (* x x) y)))
+
+(if (&lt; a b) a b)</code></pre>
+</div>
+<div id="evaluating---some-data-constructors"
+class="slide section level2">
+<h1>Evaluating - Some Data Constructors</h1>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> dataclass</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Sym:</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    n: <span class="bu">str</span></span></code></pre></div>
+</div>
+<div id="evaluating---some-data-constructors-1"
+class="slide section level2">
+<h1>Evaluating - Some Data Constructors</h1>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> dataclass</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Sym:</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    n: <span class="bu">str</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Nil:</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__iter__</span>(<span class="va">self</span>): <span class="cf">yield</span> <span class="cf">from</span> ()</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Cons:</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>    hd: <span class="st">&#39;Any&#39;</span></span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>    tl: <span class="st">&#39;Cons | Nil&#39;</span></span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__iter__</span>(<span class="va">self</span>):</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>        xs <span class="op">=</span> <span class="va">self</span></span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">while</span> <span class="bu">isinstance</span>(xs, Cons):</span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>            <span class="cf">yield</span> xs.hd</span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>            xs <span class="op">=</span> xs.tl</span></code></pre></div>
+</div>
+<div id="evaluating---some-data-constructors-2"
+class="slide section level2">
+<h1>Evaluating - Some Data Constructors</h1>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> dataclass</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Sym:</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    n: <span class="bu">str</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Nil:</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__iter__</span>(<span class="va">self</span>): <span class="cf">yield</span> <span class="cf">from</span> ()</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Cons:</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    hd: <span class="st">&#39;Any&#39;</span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>    tl: <span class="st">&#39;Cons | Nil&#39;</span></span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__iter__</span>(<span class="va">self</span>):</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>        xs <span class="op">=</span> <span class="va">self</span></span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">while</span> <span class="bu">isinstance</span>(xs, Cons):</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>            <span class="cf">yield</span> xs.hd</span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>            xs <span class="op">=</span> xs.tl</span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Vec:</span>
+<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>    xs: <span class="bu">tuple</span></span></code></pre></div>
+</div>
+<div id="evaluating-1" class="slide section level2">
+<h1>Evaluating</h1>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eval_expr(form, env):</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> form:</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>        ...</span></code></pre></div>
+</div>
+<div id="evaluating---literals" class="slide section level2">
+<h1>Evaluating - Literals</h1>
+<ul>
+<li><code class="sourceCode clojure">&#39;()</code></li>
+<li><code
+class="sourceCode clojure"><span class="va">nil</span> <span class="va">true</span> <span class="va">false</span> <span class="dv">99</span> <span class="fl">1.3</span> <span class="st">&quot;weee&quot;</span></code></li>
+<li><code
+class="sourceCode python"><span class="op">&lt;</span>function <span class="op">&lt;</span><span class="kw">lambda</span><span class="op">&gt;</span> at <span class="bn">0x102b2df30</span><span class="op">&gt;</span></code></li>
+</ul>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eval_expr(form, env):</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> form:</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>        ...</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Nil() <span class="im">as</span> nil:</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> nil</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="va">None</span> <span class="op">|</span> <span class="va">True</span> <span class="op">|</span> <span class="va">False</span> <span class="op">|</span> <span class="bu">int</span>() <span class="op">|</span> <span class="bu">float</span>() <span class="op">|</span> <span class="bu">str</span>() <span class="im">as</span> value:</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> value</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> x <span class="cf">if</span> <span class="bu">callable</span>(x):</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> x</span></code></pre></div>
+</div>
+<div id="evaluating---symbols" class="slide section level2">
+<h1>Evaluating - Symbols</h1>
+<ul>
+<li><code
+class="sourceCode clojure"><span class="kw">+</span></code></li>
+<li><code class="sourceCode clojure">my-favourite-variable</code></li>
+</ul>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eval_expr(form, env):</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> form:</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>        ...</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Sym(_) <span class="im">as</span> sym:</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> env[sym]</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>        ...</span></code></pre></div>
+</div>
+<div id="evaluating---function-calls" class="slide section level2">
+<h1>Evaluating - Function calls</h1>
+<ul>
+<li><code
+class="sourceCode clojure">(<span class="kw">+</span> <span class="dv">1</span> <span class="dv">2</span>)</code></li>
+<li><code
+class="sourceCode clojure">(<span class="kw">print</span> <span class="st">&quot;λx.x&quot;</span>)</code></li>
+</ul>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eval_expr(form, env):</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> form:</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>        ...</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Cons(procedure_form, argument_forms):</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>            procedure <span class="op">=</span> eval_expr(procedure_form, env)</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>            args <span class="op">=</span> [eval_expr(arg, env) <span class="cf">for</span> arg <span class="kw">in</span> argument_forms]</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> procedure(<span class="op">*</span>args)</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>        ...</span></code></pre></div>
+</div>
+<div id="evaluating---if-expressions" class="slide section level2">
+<h1>Evaluating - If Expressions</h1>
+<ul>
+<li><code
+class="sourceCode clojure">(<span class="kw">if</span> (<span class="kw">&lt;</span> a b) a b)</code></li>
+</ul>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eval_expr(form, env):</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> form:</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>        ...</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Cons(Sym(<span class="st">&#39;if&#39;</span>), Cons(predicate, Cons(consequent, Cons(alternative, Nil())))):</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> eval_expr(predicate, env):</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span> eval_expr(consequent, env)</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> eval_expr(alternative, env)</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>        ...</span></code></pre></div>
+</div>
+<div id="evaluating---lambda-expressions" class="slide section level2">
+<h1>Evaluating - Lambda Expressions</h1>
+<ul>
+<li><code
+class="sourceCode clojure">(<span class="kw">fn</span> [x y] ((<span class="kw">+</span> (<span class="kw">*</span> x x) y)))</code></li>
+</ul>
+<div class="sourceCode" id="cb35"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eval_expr(form, env):</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> form:</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Cons(Sym(<span class="st">&#39;fn&#39;</span>), Cons(Vec() <span class="im">as</span> params, Cons(body, Nil()))):</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Fn(params.xs, body, env)</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>        ...</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Fn:</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>    params: <span class="bu">tuple</span></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>    body: <span class="st">&#39;Any&#39;</span></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>    env: <span class="st">&#39;Mapping&#39;</span></span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__call__</span>(<span class="va">self</span>, <span class="op">*</span>args):</span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>        env <span class="op">=</span> <span class="va">self</span>.env <span class="op">|</span> <span class="bu">dict</span>(<span class="bu">zip</span>(<span class="va">self</span>.params, args, strict<span class="op">=</span><span class="va">True</span>))</span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> eval_expr(<span class="va">self</span>.body, env)</span></code></pre></div>
+</div>
+<div id="evaluating---all-together" class="slide section level2">
+<h1>Evaluating - All together</h1>
+<ul>
+<li>We have to put our lambdas and ifs above our function calls. Just
+like an if-else block</li>
+</ul>
+<div class="sourceCode" id="cb36"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eval_expr(form, env):</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> form:</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Cons(Sym(<span class="st">&#39;fn&#39;</span>), Cons(Vec() <span class="im">as</span> params, Cons(body, Nil()))):</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Fn(params.xs, body, env)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Cons(Sym(<span class="st">&#39;if&#39;</span>), Cons(predicate, Cons(consequent, Cons(alternative, Nil())))):</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> eval_expr(predicate, env):</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span> eval_expr(consequent, env)</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> eval_expr(alternative, env)</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Cons(procedure_form, argument_forms):</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>            procedure <span class="op">=</span> eval_expr(procedure_form, env)</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>            args <span class="op">=</span> [eval_expr(arg, env) <span class="cf">for</span> arg <span class="kw">in</span> argument_forms]</span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> procedure(<span class="op">*</span>args)</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Nil() <span class="im">as</span> nil:</span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> nil</span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Sym(_) <span class="im">as</span> sym:</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> env[sym]</span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="va">None</span> <span class="op">|</span> <span class="va">True</span> <span class="op">|</span> <span class="va">False</span> <span class="op">|</span> <span class="bu">int</span>() <span class="op">|</span> <span class="bu">float</span>() <span class="op">|</span> <span class="bu">str</span>() <span class="im">as</span> value:</span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> value</span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> x <span class="cf">if</span> <span class="bu">callable</span>(x):</span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> x</span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">Exception</span>(<span class="ss">f&#39;invalid form: </span><span class="sc">{</span>form<span class="sc">}</span><span class="ss">&#39;</span>)</span></code></pre></div>
+</div>
+<div id="evaluating-2" class="slide section level2">
+<h1>Evaluating</h1>
+<div class="sourceCode" id="cb37"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Fn:</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    params: <span class="bu">tuple</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    body: <span class="st">&#39;Any&#39;</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    env: <span class="st">&#39;Mapping&#39;</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__call__</span>(<span class="va">self</span>, <span class="op">*</span>args):</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>        env <span class="op">=</span> <span class="va">self</span>.env <span class="op">|</span> <span class="bu">dict</span>(<span class="bu">zip</span>(<span class="va">self</span>.params, args, strict<span class="op">=</span><span class="va">True</span>))</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> eval_expr(<span class="va">self</span>.body, env)</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>initial_env <span class="op">=</span> {</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>    Sym(<span class="st">&#39;+&#39;</span>): <span class="kw">lambda</span> a, b: a <span class="op">+</span> b,</span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>    Sym(<span class="st">&#39;-&#39;</span>): <span class="kw">lambda</span> a, b: a <span class="op">-</span> b,</span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>    Sym(<span class="st">&#39;*&#39;</span>): <span class="kw">lambda</span> a, b: a <span class="op">*</span> b,</span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>    Sym(<span class="st">&#39;/&#39;</span>): <span class="kw">lambda</span> a, b: a <span class="op">/</span> b,</span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a>    Sym(<span class="st">&#39;&lt;&#39;</span>): <span class="kw">lambda</span> a, b: a <span class="op">&lt;</span> b,</span>
+<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a>    Sym(<span class="st">&#39;&gt;&#39;</span>): <span class="kw">lambda</span> a, b: a <span class="op">&gt;</span> b,</span>
+<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div id="section-2" class="slide section level2">
+<h1></h1>
+<div class="sourceCode" id="cb38"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># (+ 1 2) -&gt; 3</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> eval_expr(Cons(Sym(<span class="st">&#39;+&#39;</span>), Cons(<span class="dv">1</span>, Cons(<span class="dv">2</span>, Nil()))), initial_env)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span></span></code></pre></div>
+<div class="incremental">
+<div class="sourceCode" id="cb39"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># (if (&lt; 1 2) true false) -&gt; true</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> eval_expr(Cons(Sym(<span class="st">&#39;if&#39;</span>), Cons(Cons(Sym(<span class="st">&#39;&lt;&#39;</span>), Cons(<span class="dv">1</span>, Cons(<span class="dv">2</span>, Nil()))), Cons(<span class="va">True</span>, Cons(<span class="va">False</span>, Nil())))), initial_env)</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="va">True</span></span></code></pre></div>
+</div>
+<div class="incremental">
+<div class="sourceCode" id="cb40"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># (fn [a b] (* a b)) -&gt; Fn(...)</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> eval_expr(Cons(Sym(<span class="st">&#39;fn&#39;</span>), Cons(Vec((Sym(<span class="st">&#39;a&#39;</span>), Sym(<span class="st">&#39;b&#39;</span>))), Cons(Cons(Sym(<span class="st">&#39;*&#39;</span>), Cons(Sym(<span class="st">&#39;a&#39;</span>), Cons(Sym(<span class="st">&#39;b&#39;</span>), Nil()))), Nil()))), initial_env)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>Fn(params<span class="op">=</span>(Sym(n<span class="op">=</span><span class="st">&#39;a&#39;</span>), Sym(n<span class="op">=</span><span class="st">&#39;b&#39;</span>)), body<span class="op">=</span>Cons(hd<span class="op">=</span>Sym(n<span class="op">=</span><span class="st">&#39;*&#39;</span>), tl<span class="op">=</span>Cons(hd<span class="op">=</span>Sym(n<span class="op">=</span><span class="st">&#39;a&#39;</span>), tl<span class="op">=</span>Cons(hd<span class="op">=</span>Sym(n<span class="op">=</span><span class="st">&#39;b&#39;</span>), tl<span class="op">=</span>Nil()))), env<span class="op">=</span>{Sym(n<span class="op">=</span><span class="st">&#39;+&#39;</span>): <span class="op">&lt;</span>function <span class="op">&lt;</span><span class="kw">lambda</span><span class="op">&gt;</span> at <span class="bn">0x1029c1bd0</span><span class="op">&gt;</span>, Sym(n<span class="op">=</span><span class="st">&#39;-&#39;</span>): <span class="op">&lt;</span>function <span class="op">&lt;</span><span class="kw">lambda</span><span class="op">&gt;</span> at <span class="bn">0x1029c1ea0</span><span class="op">&gt;</span>, Sym(n<span class="op">=</span><span class="st">&#39;*&#39;</span>): <span class="op">&lt;</span>function <span class="op">&lt;</span><span class="kw">lambda</span><span class="op">&gt;</span> at <span class="bn">0x1029c1fc0</span><span class="op">&gt;</span>, Sym(n<span class="op">=</span><span class="st">&#39;/&#39;</span>): <span class="op">&lt;</span>function <span class="op">&lt;</span><span class="kw">lambda</span><span class="op">&gt;</span> at <span class="bn">0x1029c2050</span><span class="op">&gt;</span>, Sym(n<span class="op">=</span><span class="st">&#39;&lt;&#39;</span>): <span class="op">&lt;</span>function <span class="op">&lt;</span><span class="kw">lambda</span><span class="op">&gt;</span> at <span class="bn">0x1029c20e0</span><span class="op">&gt;</span>, Sym(n<span class="op">=</span><span class="st">&#39;&gt;&#39;</span>): <span class="op">&lt;</span>function <span class="op">&lt;</span><span class="kw">lambda</span><span class="op">&gt;</span> at <span class="bn">0x1029c2170</span><span class="op">&gt;</span>})</span></code></pre></div>
+</div>
+<div class="incremental">
+<div class="sourceCode" id="cb41"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># ((fn [a] (* a 11)) 7)  -&gt; 11</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> eval_expr(Cons(Cons(Sym(<span class="st">&#39;fn&#39;</span>), Cons(Vec((Sym(<span class="st">&#39;a&#39;</span>),)), Cons(Cons(Sym(<span class="st">&#39;*&#39;</span>), Cons(Sym(<span class="st">&#39;a&#39;</span>), Cons(<span class="dv">11</span>, Nil()))), Nil()))), Cons(<span class="dv">7</span>, Nil())), initial_env)</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="dv">77</span></span></code></pre></div>
+</div>
+</div>
+<div id="how-does-pack-compare" class="slide section level2">
+<h1>How does Pack compare?</h1>
+<ul>
+<li>Symbols in Pack are namespaced.
+<ul>
+<li><code class="sourceCode clojure">pack.core/+</code> → <code
+class="sourceCode python">Sym(<span class="st">&#39;pack.core&#39;</span>, <span class="st">&#39;+&#39;</span>)</code></li>
+</ul></li>
+<li>Symbols resolve to a mutable value cell called a Var</li>
+<li>Pack has 11 special forms, rather than 2</li>
+<li>Persistent, immutable Vector and Map types with
+<em>O(log<sub>32</sub>(n))</em> access.</li>
+<li><em>… blah blah blah</em></li>
+</ul>
+<!-- CUT
+## Match Case - What does this buy us?
+
+TODO: write an example from the compiler without using match/case
+  and compare
+-->
+</div>
+<div id="match-case---can-you-spot-the-bug"
+class="slide section level2">
+<h1>Match Case - Can you spot the bug?</h1>
+<!-- The first case in the lower match   -->
+<!-- Case statements do not fall through -->
+<div class="sourceCode" id="cb42"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nest_loop_in_recursive_fn(expr):</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> contains_recur(expr):</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>        ...</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> expr:</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Cons(Sym(<span class="va">None</span>, <span class="st">&#39;fn&#39;</span>), Cons(params, Cons(body, Nil()))):</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> contains_recur(body):</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>                loop <span class="op">=</span> Cons(Sym(<span class="va">None</span>, <span class="st">&#39;loop&#39;</span>),</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>                            Cons(Vec.from_iter(untake_pairs(<span class="bu">zip</span>(params, params))),</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>                                 Cons(body, nil)))</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span> Cons(Sym(<span class="va">None</span>, <span class="st">&#39;fn&#39;</span>),</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>                            Cons(params,</span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>                                 Cons(loop, nil)))</span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> other:</span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> other</span></code></pre></div>
+</div>
+<div id="match-case-pitfalls" class="slide section level2">
+<h1>Match Case Pitfalls</h1>
+<ul>
+<li>Easy to forget a positional argument when matching dataclasses
+<ul>
+<li><code
+class="sourceCode python"><span class="cf">case</span> Cons(hd):</code>
+is the same as <code
+class="sourceCode python"><span class="cf">case</span> Cons(hd, _)</code>
+<ul>
+<li>so would match <code
+class="sourceCode python">Cons(<span class="dv">1</span>, Cons(<span class="dv">2</span>, Cons(<span class="dv">3</span>, Nil())))</code>
+etc</li>
+</ul></li>
+</ul></li>
+<li>Easy to accidentally return None:
+<ul>
+<li>Have a default case or return an error</li>
+<li>Start writing the function with a <code
+class="sourceCode python"><span class="cf">raise</span> <span class="pp">NotImplementedError</span></code>
+at the bottom</li>
+<li>Use <code class="sourceCode python">typing.NoReturn</code> or (new
+in python 3.11) <code class="sourceCode python">typing.Never</code></li>
+</ul></li>
+<li>The ordering of case statements matters
+<ul>
+<li>Our <code
+class="sourceCode python"><span class="cf">case</span> Cons(proc, args)</code>
+must come after our <code
+class="sourceCode python"><span class="cf">case</span> Cons(Sym(<span class="st">&#39;if&#39;</span>), ...):</code></li>
+</ul></li>
+</ul>
+</div>
+<div id="match-case-pitfalls-1" class="slide section level2">
+<h1>Match Case Pitfalls</h1>
+<ul>
+<li><code>[ ]</code> matches any sequence, not just a list</li>
+<li>Not possible to factor out constants
+<ul>
+<li>Suppose <code
+class="sourceCode python">FN <span class="op">=</span> Sym(<span class="st">&#39;fn&#39;</span>)</code></li>
+<li><code
+class="sourceCode python"><span class="cf">case</span> Cons(FN, _):</code>
+captures the symbol name as FN
+<ul>
+<li>e.g. <code
+class="sourceCode python">Cons(Sym(<span class="st">&#39;if&#39;</span>))</code>
+would match and give <code class="sourceCode python">FN</code> bound as
+<code
+class="sourceCode python">Sym(<span class="st">&#39;if&#39;</span>)</code></li>
+</ul></li>
+<li><code
+class="sourceCode python"><span class="kw">class</span> Forms: FN <span class="op">=</span> Sym(<span class="st">&#39;fn&#39;</span>)</code></li>
+<li><code
+class="sourceCode python"><span class="cf">case</span> Cons(Forms.FN, _):</code>
+is now equivalent to <code
+class="sourceCode python"><span class="cf">case</span> Cons(Sym(<span class="st">&#39;fn&#39;</span>), _):</code>
+but is longer 😩</li>
+</ul></li>
+</ul>
+<!--
+Failover cases look nice, but lead to errors
+
+Later Dan: what did I mean by this?
+-->
+</div>
+<div id="the-itch" class="slide section level2">
+<h1>The Itch</h1>
+<pre><code>
+def eval_expr(form, env):
+    match form:
+        ...
+        case Cons(Sym('if'), Cons(predicate, Cons(consequent, Cons(alternative, Nil())))):
+            if <mark>eval_expr</mark>(predicate, env):
+                return <mark>eval_expr</mark>(consequent, env)
+            return <mark>eval_expr</mark>(alternative, env)
+
+        case Cons(procedure_form, argument_forms):
+            procedure = <mark>eval_expr</mark>(procedure_form, env)
+            args = [<mark>eval_expr</mark>(arg, env) for arg in argument_forms]
+            return procedure(*args)
+        ...
+</pre>
+<p></code></p>
+</div>
+<div id="packs-interpreter-and-compiler-pipeline"
+class="slide section level2">
+<h1>Pack’s Interpreter and Compiler Pipeline</h1>
+<div class="columns">
+<div class="column" style="width:33%;">
+<h3 id="interpreter">Interpreter</h3>
+<ul>
+<li>read forms</li>
+<li>expand quasi-quotes</li>
+<li>expand macros</li>
+<li>validate special form syntax</li>
+<li>create defs</li>
+<li>evaluate top level forms</li>
+<li>evaluate expressions</li>
+</ul>
+</div><div class="column" style="width:33%;">
+<h3 id="compiler">Compiler</h3>
+<ul>
+<li>extract closure</li>
+<li>deduce scope</li>
+<li>replace complex quoted data</li>
+<li>replace data literals</li>
+<li>hoist lambdas</li>
+<li>resolve qualified symbols</li>
+</ul>
+</div><div class="column" style="width:33%;">
+<ul>
+<li>nest loop within recursive fn</li>
+<li>replace loop/recur with while-true</li>
+<li>convert to intermediate</li>
+<li>convert <code>if</code> expression -&gt; statement</li>
+<li>hoist statements</li>
+<li>place return</li>
+<li>convert to python</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="section-3" class="slide section level2">
+<h1></h1>
+<p>How do we avoid repetition and mistakes?</p>
+</div>
+<div id="recursion-schemes" class="slide section level2">
+<h1>Recursion Schemes</h1>
+<p>Idea:</p>
+<p>Can we just write the recursion once?</p>
+</div>
+<div id="fmap" class="slide section level2">
+<h1><code>fmap</code></h1>
+<p>Answer: yes</p>
+<div class="sourceCode" id="cb43"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fmap(f, form):</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> form:</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Cons(Sym(<span class="st">&#39;fn&#39;</span>), Cons(Vec() <span class="im">as</span> params, Cons(body, Nil()))):</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Cons(Sym(<span class="st">&#39;fn&#39;</span>), Cons(Vec() <span class="im">as</span> params, Cons(f(body), Nil())))</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Cons(Sym(<span class="st">&#39;if&#39;</span>), Cons(predicate, Cons(consequent, Cons(alternative, Nil())))):</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Cons(Sym(<span class="st">&#39;if&#39;</span>), Cons(f(predicate), Cons(f(consequent), Cons(f(alternative), Nil()))))</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> Cons(procedure_form, argument_forms):</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Cons(f(procedure_form), to_cons_list(<span class="bu">map</span>(f, [<span class="op">*</span>argument_forms])))</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> other:</span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> other</span></code></pre></div>
+</div>
+<div id="sorry-we-ran-out-of-time" class="slide section level2">
+<h1>Sorry we ran out of time</h1>
+<p>What you didn’t get to hear about:</p>
+<ul>
+<li>Catamorphisms</li>
+<li>Anomorphisms</li>
+<li>Hylomophisms</li>
+<li>Apomorphisms</li>
+<li>Zygomorphisms</li>
+</ul>
+</div>
+<div id="future-work-ideas" class="slide section level2">
+<h1>Future Work / Ideas</h1>
+<ul>
+<li><del>Finish compilation (i.e. transpilation) pipeline</del></li>
+<li>python keyword argument compatibility</li>
+<li>Add <code>try</code> <code>except</code></li>
+<li>Try to return to a regular sleeping pattern</li>
+</ul>
+</div>
+<div id="recursion-schemes---resources" class="slide section level2">
+<h1>Recursion Schemes - Resources</h1>
+<h3 id="useful-resources">Useful resources</h3>
+<ul>
+<li><a href="https://github.com/sellout/recursion-scheme-talk"
+class="uri">https://github.com/sellout/recursion-scheme-talk</a></li>
+<li><a href="https://github.com/precog/matryoshka"
+class="uri">https://github.com/precog/matryoshka</a></li>
+</ul>
+</div>
+<div id="source-code" class="slide section level2">
+<h1>Source Code</h1>
+<h3 id="pack-itself">Pack Itself</h3>
+<ul>
+<li><a href="https://github.com/cakemanny/pack-lang"
+class="uri">https://github.com/cakemanny/pack-lang</a></li>
+</ul>
+<h3 id="this-talk">This Talk</h3>
+<ul>
+<li><a href="https://github.com/cakemanny/talks"
+class="uri">https://github.com/cakemanny/talks</a></li>
+</ul>
+</div>
+<div id="indexerror-slide-index-out-of-range"
+class="slide section level2">
+<h1><code>IndexError: slide index out of range</code></h1>
+</div>
+<div id="rejected-material" class="slide section level2">
+<h1>Rejected Material</h1>
+</div>
+<div id="syntax---symbols" class="slide section level2">
+<h1>Syntax - Symbols</h1>
+<h3 id="symbols">Symbols</h3>
+<div class="sourceCode" id="cb44"><pre
+class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>    x</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>    my-variable</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    &lt;- <span class="co">;; symbols are symbols too</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    🚪 <span class="co">;; 😈</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>   user/my-var</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="co">;  ^--^</span></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a><span class="co">;    \ namespace</span></span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>    com.bettermarks.math/+</span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a><span class="co">;      ^</span></span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a><span class="co">;       \ dots make directories</span></span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre
+class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>user=&gt; (<span class="bu">def</span><span class="fu"> </span>🤦 <span class="dv">5</span>)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="va">#&#39;user/🤦</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>user=&gt; 🤦</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>user=&gt; (<span class="kw">+</span> 🤦 <span class="dv">5</span>)</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span></span></code></pre></div>
+</div>
+<div id="data-structures" class="slide section level2">
+<h1>Data Structures</h1>
+<p>More than just lists!</p>
+<ul>
+<li>Lists <code>(a b c)</code></li>
+<li>Vectors <code>[a b c]</code></li>
+<li>Maps i.e. dictionaries <code>{:a b :c d}</code></li>
+</ul>
+<p>All are immutable</p>
+</div>
+<div id="data-structures---lists" class="slide section level2">
+<h1>Data Structures - Lists</h1>
+<div class="sourceCode" id="cb46"><pre
+class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>&#39;(<span class="dv">1</span> <span class="st">&quot;one&quot;</span> <span class="at">&#39;two</span>)</span></code></pre></div>
+<div class="figure">
+<img src="lists.svg" alt="" />
+<p class="caption"><em>the structure of a list</em></p>
+</div>
+</div>
+<div id="data-structures---lists-1" class="slide section level2">
+<h1>Data Structures - Lists</h1>
+<h3 id="implementation">Implementation</h3>
+<p>The cons cell you all know and love.</p>
+<div class="sourceCode" id="cb47"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>    <span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>, slots<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">class</span> Cons(List):</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>        hd: Any</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>        tl: <span class="st">&#39;Optional[List]&#39;</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>        ...</span></code></pre></div>
+<p>Nil: Something to stick at the end. The empty list
+<code>()</code></p>
+<div class="sourceCode" id="cb48"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>    <span class="kw">class</span> Nil(List):</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>        <span class="fu">__slots__</span> <span class="op">=</span> ()</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>        ...</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>    nil <span class="op">=</span> Nil()</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># all instances of Nil() are nil</span></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>    Nil.<span class="fu">__new__</span> <span class="op">=</span> <span class="kw">lambda</span> cls: nil</span></code></pre></div>
+<!-- I wanted to put None there, but then you don't get such a nice repr -->
+<!-- None works some of the time though -->
+</div>
+<div id="data-structures---lists-2" class="slide section level2">
+<h1>Data Structures - Lists</h1>
+<p>In Python that looks like:</p>
+<div class="sourceCode" id="cb49"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>Cons(<span class="dv">1</span>,</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>     Cons(<span class="st">&#39;one&#39;</span>,</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>          Cons(Sym(<span class="va">None</span>, <span class="st">&quot;two&quot;</span>),</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>               nil)))</span></code></pre></div>
+</div>
+<div id="data-structures---vectors" class="slide section level2">
+<h1>Data Structures - Vectors</h1>
+<div class="sourceCode" id="cb50"><pre
+class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>[a b c <span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>]</span></code></pre></div>
+<div class="figure">
+<img src="vector1.svg" alt="" />
+<p class="caption"><em>a single node vector</em></p>
+</div>
+<div class="figure">
+<img src="vector2.svg" alt="" />
+<p class="caption"><em>a vector with 100 elements</em></p>
+</div>
+</div>
+<div id="data-structures---vectors-1" class="slide section level2">
+<h1>Data Structures - Vectors</h1>
+<div class="sourceCode" id="cb51"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>, slots<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Vec(Sequence):</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>    xs: <span class="bu">tuple</span>[Any <span class="op">|</span> <span class="st">&#39;Vec&#39;</span>]</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>    height: <span class="bu">int</span></span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__getitem__</span>(<span class="va">self</span>, idx: <span class="bu">int</span>):</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>._is_leaf():</span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">self</span>.xs[idx]</span>
+<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a>        subvec_idx <span class="op">=</span> idx <span class="op">&gt;&gt;</span> (<span class="dv">5</span> <span class="op">*</span> <span class="va">self</span>.height)</span>
+<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a>        mask <span class="op">=</span> (<span class="dv">1</span> <span class="op">&lt;&lt;</span> (<span class="dv">5</span> <span class="op">*</span> <span class="va">self</span>.height)) <span class="op">-</span> <span class="dv">1</span></span>
+<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.xs[subvec_idx][mask <span class="op">&amp;</span> idx]</span>
+<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a>    ...</span></code></pre></div>
+</div>
+<div id="data-structures---vectors-2" class="slide section level2">
+<h1>Data Structures - Vectors</h1>
+<p>Indexing involves splitting up the index (<code>idx</code>) into
+groups of 5 bits to get the correct offset in each level of the tree</p>
+<div class="sourceCode" id="cb52"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> pack.interp <span class="im">import</span> Vec</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> v1 <span class="op">=</span> Vec.from_iter(<span class="bu">range</span>(<span class="dv">100</span>))</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">bin</span>(<span class="dv">70</span>)</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="co">&#39;0b1000110&#39;</span></span></code></pre></div>
+<pre><code>     00010 00110
+        \     \ Index for height 0
+         Index for height 1</code></pre>
+<div class="sourceCode" id="cb54"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> v1.xs[<span class="bn">0b10</span>].xs[<span class="bn">0b00110</span>]</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="dv">70</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> v1[<span class="dv">70</span>]</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a><span class="dv">70</span></span></code></pre></div>
+</div>
+<div id="data-structures---maps" class="slide section level2">
+<h1>Data Structures - Maps</h1>
+<div class="figure">
+<img src="maps.svg" style="width:90.0%" alt="" />
+<p class="caption"><em>A HAMT</em></p>
+</div>
+</div>
+<div id="data-structures---maps-1" class="slide section level2">
+<h1>Data Structures - Maps</h1>
+<div class="figure">
+<img src="maps.svg" style="width:50.0%" alt="" />
+<p class="caption"><em>A HAMT</em></p>
+</div>
+<pre><code>_hash32(:these)  = 3487490880 = 00000 00011 00111 11101 11101 11000 11010 00000
+_hash32(:are)    = 1726257865 = 00000 00001 10011 01110 01001 00110 10110 01001
+_hash32(:they)   = 3908472888 = 00000 00011 10100 01111 01101 00100 00001 11000
+_hash32(:rather) =  843060011 = 00000 00000 11001 00100 00000 00100 11001 01011
+                                          ^
+                                           \</code></pre>
+<p>Here we see where <code>:these</code> and <code>:they</code> have
+clashed in group 6, and so get pushed down into a level 5 node</p>
+<p><em>and writing this slide I notice the bug… we should be starting
+height from 6</em></p>
+<!-- TODO: add another bitset to indicate which slots are empty  -->
+<!--
+##
+
+Sometimes data structures are hard... 🤦
+
+```
+(Pdb) p entry[1]
+[y 2]
+(Pdb) p v
+[]
+(Pdb) p entry[1] == v
+True
+(Pdb)
+```
+-->
+</div>
+<div id="namespaces" class="slide section level2">
+<h1>Namespaces ?</h1>
+<div class="sourceCode" id="cb56"><pre
+class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> my-namespace-name)</span></code></pre></div>
+<div class="sourceCode" id="cb57"><pre
+class="sourceCode clojure"><code class="sourceCode clojure"></code></pre></div>
+</div>
+<div id="zygomorphism---motivation" class="slide section level2">
+<h1>Zygomorphism - Motivation</h1>
+<p>rewriting to use a single pass</p>
+<div class="sourceCode" id="cb58"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> convert_if_expr_to_stmt(i<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>    fst <span class="op">=</span> <span class="kw">lambda</span> pair: pair[<span class="dv">0</span>]</span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>    snd <span class="op">=</span> <span class="kw">lambda</span> pair: pair[<span class="dv">1</span>]</span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> alg(expr):</span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>        <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a><span class="co">        ExprF[(ExprF, contains_stmt: Bool)] -&gt; (ExprF, contains_stmt: Bool)</span></span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a><span class="co">        &quot;&quot;&quot;</span></span>
+<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">match</span> expr:</span>
+<span id="cb58-11"><a href="#cb58-11" aria-hidden="true" tabindex="-1"></a>            <span class="co"># c1 and c2 are whether those arms of the if expression</span></span>
+<span id="cb58-12"><a href="#cb58-12" aria-hidden="true" tabindex="-1"></a>            <span class="co"># contain any statements - as calculated in the default</span></span>
+<span id="cb58-13"><a href="#cb58-13" aria-hidden="true" tabindex="-1"></a>            <span class="co"># case</span></span>
+<span id="cb58-14"><a href="#cb58-14" aria-hidden="true" tabindex="-1"></a>            <span class="cf">case</span> IfExpr((pred, _), (con, c1), (alt, c2)) <span class="cf">if</span> c1 <span class="kw">or</span> c2:</span>
+<span id="cb58-15"><a href="#cb58-15" aria-hidden="true" tabindex="-1"></a>                t <span class="op">=</span> next_temp()</span>
+<span id="cb58-16"><a href="#cb58-16" aria-hidden="true" tabindex="-1"></a>                <span class="co"># statement hoisting will clean this up</span></span>
+<span id="cb58-17"><a href="#cb58-17" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span> Do((</span>
+<span id="cb58-18"><a href="#cb58-18" aria-hidden="true" tabindex="-1"></a>                    IfStmt(pred,</span>
+<span id="cb58-19"><a href="#cb58-19" aria-hidden="true" tabindex="-1"></a>                           con <span class="cf">if</span> is_stmt(con) <span class="cf">else</span> SetBang(t, con),</span>
+<span id="cb58-20"><a href="#cb58-20" aria-hidden="true" tabindex="-1"></a>                           alt <span class="cf">if</span> is_stmt(alt) <span class="cf">else</span> SetBang(t, alt)),</span>
+<span id="cb58-21"><a href="#cb58-21" aria-hidden="true" tabindex="-1"></a>                ), t), <span class="va">True</span></span>
+<span id="cb58-22"><a href="#cb58-22" aria-hidden="true" tabindex="-1"></a>            <span class="cf">case</span> other:</span>
+<span id="cb58-23"><a href="#cb58-23" aria-hidden="true" tabindex="-1"></a>                contains <span class="op">=</span> reduce_ir(<span class="va">False</span>, operator.or_, fmap_ir(snd, other))</span>
+<span id="cb58-24"><a href="#cb58-24" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span> (fmap_ir(fst, other), contains <span class="kw">or</span> is_stmt(other))</span>
+<span id="cb58-25"><a href="#cb58-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> <span class="va">False</span></span>
+<span id="cb58-26"><a href="#cb58-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> alg</span></code></pre></div>
+<p>then realise we can use zygomorphism to remove most of this base
+case</p>
+</div>
+<div id="zygomorphism---solution" class="slide section level2">
+<h1>Zygomorphism - Solution</h1>
+<div class="sourceCode" id="cb59"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>    zygo_f(fmap_ir)(contains_stmt_alg, convert_if_expr_to_stmt(var_id_counter)),</span></code></pre></div>
+<div class="sourceCode" id="cb60"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> contains_stmt_alg(expr):</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;if expr or any subexpression of expr is a statement&quot;</span></span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> expr:</span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> x <span class="cf">if</span> is_stmt(x):</span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">True</span></span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> other:</span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> reduce_ir(<span class="va">False</span>, operator.or_, other)</span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-10"><a href="#cb60-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> convert_if_expr_to_stmt(i<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb60-11"><a href="#cb60-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> next_temp(prefix<span class="op">=</span><span class="st">&quot;&quot;</span>):</span>
+<span id="cb60-12"><a href="#cb60-12" aria-hidden="true" tabindex="-1"></a>        <span class="kw">nonlocal</span> i</span>
+<span id="cb60-13"><a href="#cb60-13" aria-hidden="true" tabindex="-1"></a>        i <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb60-14"><a href="#cb60-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Sym(<span class="va">None</span>, <span class="ss">f&#39;</span><span class="sc">{</span>prefix<span class="sc">}</span><span class="ss">__t.</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">&#39;</span>)</span>
+<span id="cb60-15"><a href="#cb60-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-16"><a href="#cb60-16" aria-hidden="true" tabindex="-1"></a>    fst <span class="op">=</span> <span class="kw">lambda</span> pair: pair[<span class="dv">0</span>]</span>
+<span id="cb60-17"><a href="#cb60-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-18"><a href="#cb60-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> alg(expr):</span>
+<span id="cb60-19"><a href="#cb60-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb60-20"><a href="#cb60-20" aria-hidden="true" tabindex="-1"></a><span class="co">        ExprF[(ExprF, contains_stmt: Bool)] -&gt; ExprF</span></span>
+<span id="cb60-21"><a href="#cb60-21" aria-hidden="true" tabindex="-1"></a><span class="co">        &quot;&quot;&quot;</span></span>
+<span id="cb60-22"><a href="#cb60-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">match</span> expr:</span>
+<span id="cb60-23"><a href="#cb60-23" aria-hidden="true" tabindex="-1"></a>            <span class="co"># c1 and c2 are whether those arms of the if expression</span></span>
+<span id="cb60-24"><a href="#cb60-24" aria-hidden="true" tabindex="-1"></a>            <span class="co"># contain any statements</span></span>
+<span id="cb60-25"><a href="#cb60-25" aria-hidden="true" tabindex="-1"></a>            <span class="cf">case</span> IfExpr((pred, _), (con, c1), (alt, c2)) <span class="cf">if</span> c1 <span class="kw">or</span> c2:</span>
+<span id="cb60-26"><a href="#cb60-26" aria-hidden="true" tabindex="-1"></a>                t <span class="op">=</span> next_temp()</span>
+<span id="cb60-27"><a href="#cb60-27" aria-hidden="true" tabindex="-1"></a>                <span class="co"># statement hoisting will clean this up</span></span>
+<span id="cb60-28"><a href="#cb60-28" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span> Do((</span>
+<span id="cb60-29"><a href="#cb60-29" aria-hidden="true" tabindex="-1"></a>                    IfStmt(pred,</span>
+<span id="cb60-30"><a href="#cb60-30" aria-hidden="true" tabindex="-1"></a>                           con <span class="cf">if</span> is_stmt(con) <span class="cf">else</span> SetBang(t, con),</span>
+<span id="cb60-31"><a href="#cb60-31" aria-hidden="true" tabindex="-1"></a>                           alt <span class="cf">if</span> is_stmt(alt) <span class="cf">else</span> SetBang(t, alt)),</span>
+<span id="cb60-32"><a href="#cb60-32" aria-hidden="true" tabindex="-1"></a>                ), t)</span>
+<span id="cb60-33"><a href="#cb60-33" aria-hidden="true" tabindex="-1"></a>            <span class="cf">case</span> other:</span>
+<span id="cb60-34"><a href="#cb60-34" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span> fmap_ir(fst, other)</span>
+<span id="cb60-35"><a href="#cb60-35" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> <span class="va">False</span></span>
+<span id="cb60-36"><a href="#cb60-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> alg</span></code></pre></div>
+</div>
+</body>
+</html>
