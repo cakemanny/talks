@@ -20,6 +20,7 @@
 
 ;; code to paste into the repl during the demo
 (comment
+  (require 'example)
   ((. example/app run))
   )
 ; http://127.0.0.1:5000/healthz

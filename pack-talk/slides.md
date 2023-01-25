@@ -18,6 +18,11 @@ Ideas
 
 - A quick intro to LISP for the unfamiliar
 - We talk about how we can interpret a lisp in Python
+- We'll write an expression evaluator and find out the traps of match case
+
+. . .
+
+- Do interrupt and ask questions. That way we'll all get more out of it.
 
 
 ## LISP - A quick intro for people who have not seen it
@@ -82,7 +87,7 @@ user=> (def valid?
 - Most ideas based on Clojure
 - Namespaces
 - Macros
-- Python interop ... 
+- Python interop ...
 
 <!-- -->
 
@@ -99,6 +104,49 @@ So.... how do we go about writing a LISP interpreter
 
 ## Parsing
 
+::: notes
+Most languages require separate lexing and parsing stages
+LISP is quite nice, it's al
+:::
+
+The nice thing about LISP, is that it's almost entirely unambigous.
+
+```
+(1 2 3)
+^
+```
+
+It's a list
+
+```
+"hello"
+^
+```
+
+It's a string
+
+. . .
+
+```
+(- b a)
+ -10
+ ^
+```
+
+Will it be a number or the minus symbol?
+
+## Parsing
+
+- Once we've decided what we want to start parsing form, we continue until
+  it has ended.
+- We can write small functions that take an
+
+```
+str -> (Form, str)
+```
+
+## Parsing
+
 ```python
 def read_***(input_text):
     ...
@@ -112,6 +160,19 @@ def read_***(input_text):
 (1, ' 1 2 3 5 8 13')
 ```
 
+
+## Parsing
+
+```python
+def read_num(text, prefix=''):
+    i = 0
+    for c in text:
+        if '0' <= c <= '9':
+            i += 1
+        else:
+            break
+    return int(prefix + text[:i]), text[i:]
+```
 
 ## Parsing - Identifiers
 
@@ -314,9 +375,32 @@ class FileString(str):
         return super().__getitem__(idx)
 ```
 
+## FileString - What have we gained?
+
+We can now find our mistake!
+
+```clojure
+user=> (def map
+  (fn map [f xs]
+    (let* [fcons
+           (fn [x ys]
+             (cons (f x) ys)]]
+             (foldr fcons '() xs))))
+
+SyntaxError("trying to close a '(' with a ']'", ('<stdin>', 5, 28))
+```
+
 ## FileString - Problems we might run into
 
+The downside is that we need to defensively convert back to a `str`
+to get our normal string properties back later in the pipeline.
+
 We might want to use `repr` to get correct quoting, generating code.
+
+```python
+            case Quote(Sym(None, n)):
+                return f'__Sym(None, {n!r})'
+```
 
 ```python
     exec(txt, globals, ns)
@@ -325,6 +409,10 @@ We might want to use `repr` to get correct quoting, generating code.
                        ^
 SyntaxError: invalid syntax
 ```
+
+Fix:
+
+- `f'__Sym(None, {n!r})'`{.python}  →  `f'__Sym(None, {str(n)!r})'`{.python}
 
 ## Checkpoint - So what have we done so far
 
@@ -449,7 +537,11 @@ def eval_expr(form, env):
         ...
 ```
 
-## Evaluating
+## Evaluating - Literals
+
+* `'()`{.clojure}
+* `nil true false 99 1.3 "weee"`{.clojure}
+* `<function <lambda> at 0x102b2df30>`{.python}
 
 ```python
 def eval_expr(form, env):
@@ -457,15 +549,30 @@ def eval_expr(form, env):
         ...
         case Nil() as nil:
             return nil
-        case Sym(_) as sym:
-            return env[sym]
         case None | True | False | int() | float() | str() as value:
             return value
         case x if callable(x):
             return x
 ```
 
-## Evaluating
+## Evaluating - Symbols
+
+* `+`{.clojure}
+* `my-favourite-variable`{.clojure}
+
+```python
+def eval_expr(form, env):
+    match form:
+        ...
+        case Sym(_) as sym:
+            return env[sym]
+        ...
+```
+
+## Evaluating - Function calls
+
+* `(+ 1 2)`{.clojure}
+* `(print "λx.x")`{.clojure}
 
 ```python
 def eval_expr(form, env):
@@ -478,7 +585,9 @@ def eval_expr(form, env):
         ...
 ```
 
-## Evaluating
+## Evaluating - If Expressions
+
+* `(if (< a b) a b)`{.clojure}
 
 ```python
 def eval_expr(form, env):
@@ -491,7 +600,9 @@ def eval_expr(form, env):
         ...
 ```
 
-## Evaluating
+## Evaluating - Lambda Expressions
+
+* `(fn [x y] ((+ (* x x) y)))`{.clojure}
 
 ```python
 def eval_expr(form, env):
@@ -512,7 +623,10 @@ class Fn:
         return eval_expr(self.body, env)
 ```
 
-## Evaluating
+## Evaluating - All together
+
+* We have to put our lambdas and ifs above our function calls. Just like
+  an if-else block
 
 ```python
 def eval_expr(form, env):
@@ -605,10 +719,12 @@ Fn(params=(Sym(n='a'), Sym(n='b')), body=Cons(hd=Sym(n='*'), tl=Cons(hd=Sym(n='a
 * Persistent, immutable Vector and Map types with _O(log~32~(n))_ access.
 * _... blah blah blah_
 
+<!-- CUT
 ## Match Case - What does this buy us?
 
 TODO: write an example from the compiler without using match/case
   and compare
+-->
 
 ## Match Case - Can you spot the bug?
 
@@ -755,43 +871,15 @@ def fmap(f, form):
             return other
 ```
 
+## Sorry we ran out of time
 
-##
+What you didn't get to hear about:
 
-rewriting to use a single pass
-
-```python
-def convert_if_expr_to_stmt(i=0):
-
-    fst = lambda pair: pair[0]
-    snd = lambda pair: pair[1]
-
-    def alg(expr):
-        """
-        ExprF[(ExprF, contains_stmt: Bool)] -> (ExprF, contains_stmt: Bool)
-        """
-        match expr:
-            # c1 and c2 are whether those arms of the if expression
-            # contain any statements - as calculated in the default
-            # case
-            case IfExpr((pred, _), (con, c1), (alt, c2)) if c1 or c2:
-                t = next_temp()
-                # statement hoisting will clean this up
-                return Do((
-                    IfStmt(pred,
-                           con if is_stmt(con) else SetBang(t, con),
-                           alt if is_stmt(alt) else SetBang(t, alt)),
-                ), t), True
-            case other:
-                contains = reduce_ir(False, operator.or_, fmap_ir(snd, other))
-                return (fmap_ir(fst, other), contains or is_stmt(other))
-        assert False
-    return alg
-```
-
-then realise we can use zygomorphism to remove most of this
-base case
-
+* Catamorphisms
+* Anomorphisms
+* Hylomophisms
+* Apomorphisms
+* Zygomorphisms
 
 ## Future Work / Ideas
 
@@ -1026,4 +1114,84 @@ True
 ```clojure
 ```
 
+## Zygomorphism - Motivation
 
+rewriting to use a single pass
+
+```python
+def convert_if_expr_to_stmt(i=0):
+
+    fst = lambda pair: pair[0]
+    snd = lambda pair: pair[1]
+
+    def alg(expr):
+        """
+        ExprF[(ExprF, contains_stmt: Bool)] -> (ExprF, contains_stmt: Bool)
+        """
+        match expr:
+            # c1 and c2 are whether those arms of the if expression
+            # contain any statements - as calculated in the default
+            # case
+            case IfExpr((pred, _), (con, c1), (alt, c2)) if c1 or c2:
+                t = next_temp()
+                # statement hoisting will clean this up
+                return Do((
+                    IfStmt(pred,
+                           con if is_stmt(con) else SetBang(t, con),
+                           alt if is_stmt(alt) else SetBang(t, alt)),
+                ), t), True
+            case other:
+                contains = reduce_ir(False, operator.or_, fmap_ir(snd, other))
+                return (fmap_ir(fst, other), contains or is_stmt(other))
+        assert False
+    return alg
+```
+
+then realise we can use zygomorphism to remove most of this
+base case
+
+## Zygomorphism - Solution
+
+```python
+    zygo_f(fmap_ir)(contains_stmt_alg, convert_if_expr_to_stmt(var_id_counter)),
+```
+
+
+```python
+def contains_stmt_alg(expr):
+    "if expr or any subexpression of expr is a statement"
+    match expr:
+        case x if is_stmt(x):
+            return True
+        case other:
+            return reduce_ir(False, operator.or_, other)
+
+
+def convert_if_expr_to_stmt(i=0):
+    def next_temp(prefix=""):
+        nonlocal i
+        i += 1
+        return Sym(None, f'{prefix}__t.{i}')
+
+    fst = lambda pair: pair[0]
+
+    def alg(expr):
+        """
+        ExprF[(ExprF, contains_stmt: Bool)] -> ExprF
+        """
+        match expr:
+            # c1 and c2 are whether those arms of the if expression
+            # contain any statements
+            case IfExpr((pred, _), (con, c1), (alt, c2)) if c1 or c2:
+                t = next_temp()
+                # statement hoisting will clean this up
+                return Do((
+                    IfStmt(pred,
+                           con if is_stmt(con) else SetBang(t, con),
+                           alt if is_stmt(alt) else SetBang(t, alt)),
+                ), t)
+            case other:
+                return fmap_ir(fst, other)
+        assert False
+    return alg
+```
