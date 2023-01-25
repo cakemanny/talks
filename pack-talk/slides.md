@@ -80,11 +80,9 @@ user=> (def valid?
 ## Pack
 
 - Most ideas based on Clojure
-
-### Non-trivial features:
-
 - Namespaces
 - Macros
+- Python interop ... 
 
 <!-- -->
 
@@ -94,6 +92,10 @@ user=> (def valid?
 _A small demo occurs_ 😱
 
 <!-- See wc-example and flask-example -->
+
+##
+
+So.... how do we go about writing a LISP interpreter
 
 ## Parsing
 
@@ -192,6 +194,17 @@ def read_list(opener, text, closing):
             else:
                 ... # raise syntax error
 ```
+
+## Parsing - ...
+
+Don't forget
+
+* Numbers
+* Strings
+* Keywords
+* Comments
+* Quoted Forms
+* Quasi-quoted Forms
 
 ## ~~Parsing~~ _Reading_ - Putting it together
 
@@ -313,35 +326,284 @@ We might want to use `repr` to get correct quoting, generating code.
 SyntaxError: invalid syntax
 ```
 
-## So what have we done so far
+## Checkpoint - So what have we done so far
 
 ```python
 >>> from pack.reader import read_all_forms
 >>> read_all_forms("(def valid? (fn [age] (if (or (< age 0) (> age 129)) true false)))")[0]
-Cons(hd=Sym(ns=None, n='def'),
-     tl=Cons(hd=Sym(ns=None, n='valid?'),
-             tl=Cons(hd=Cons(hd=Sym(ns=None, n='fn'),
-                             tl=Cons(hd=Vec(xs=(Sym(ns=None, n='age'),), height=0),
-                                     tl=Cons(hd=Cons(hd=Sym(ns=None, n='if'),
-                                                     tl=Cons(hd=Cons(hd=Sym(ns=None, n='or'),
-                                                                     tl=Cons(hd=Cons(hd=Sym(ns=None, n='<'),
-                                                                                     tl=Cons(hd=Sym(ns=None, n='age'),
-                                                                                             tl=Cons(hd=0, tl=Nil()))),
-                                                                             tl=Cons(hd=Cons(hd=Sym(ns=None, n='>'),
-                                                                                             tl=Cons(hd=Sym(ns=None, n='age'),
-                                                                                                     tl=Cons(hd=129, tl=Nil()))),
-                                                                                     tl=Nil()))),
-                                                             tl=Cons(hd=True,
-                                                                     tl=Cons(hd=False,
-                                                                             tl=Nil())))),
-                                             tl=Nil()))),
-                     tl=Nil())))
+Cons(Sym(None, 'def'),
+     Cons(Sym(None, 'valid?'),
+          Cons(Cons(Sym(None, 'fn'),
+                    Cons(Vec(xs=(Sym(None, 'age'),), height=0),
+                         Cons(Cons(Sym(None, 'if'),
+                                   Cons(Cons(Sym(None, 'or'),
+                                             Cons(Cons(Sym(None, '<'),
+                                                       Cons(Sym(None, 'age'),
+                                                            Cons(0, Nil()))),
+                                                  Cons(Cons(Sym(None, '>'),
+                                                            Cons(Sym(None, 'age'),
+                                                                 Cons(129, Nil()))),
+                                                       Nil()))),
+                                        Cons(True,
+                                             Cons(False,
+                                                  Nil())))),
+                              Nil()))),
+               Nil())))
+```
+
+Ok, we have a reader. How do we make it do... stuff?
+
+
+## Evaluating
+
+Let's evaluate a small subset of Pack
+
+```
+(~procedure ~arg1 ~arg2 ...)
+(fn [~p1 ~p2 ...] ~body)
+(if ~pred ~cons ~alt)
+```
+
+i.e. we should be able to evaluate all of these
+
+```
+(+ 1 2)
+(print "λx.x")
+
+(fn [x y] ((+ (* x x) y)))
+
+(if (< a b) a b)
+```
+
+## Evaluating - Some Data Constructors
+
+```python
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class Sym:
+    n: str
+```
+
+## Evaluating - Some Data Constructors
+
+```python
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class Sym:
+    n: str
+
+@dataclass(frozen=True)
+class Nil:
+    def __iter__(self): yield from ()
+
+@dataclass(frozen=True)
+class Cons:
+    hd: 'Any'
+    tl: 'Cons | Nil'
+
+    def __iter__(self):
+        xs = self
+        while isinstance(xs, Cons):
+            yield xs.hd
+            xs = xs.tl
+```
+
+
+## Evaluating - Some Data Constructors
+
+```python
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class Sym:
+    n: str
+
+@dataclass(frozen=True)
+class Nil:
+    def __iter__(self): yield from ()
+
+@dataclass(frozen=True)
+class Cons:
+    hd: 'Any'
+    tl: 'Cons | Nil'
+
+    def __iter__(self):
+        xs = self
+        while isinstance(xs, Cons):
+            yield xs.hd
+            xs = xs.tl
+
+@dataclass(frozen=True)
+class Vec:
+    xs: tuple
+```
+
+
+## Evaluating
+
+```python
+def eval_expr(form, env):
+    match form:
+        ...
+```
+
+## Evaluating
+
+```python
+def eval_expr(form, env):
+    match form:
+        ...
+        case Nil() as nil:
+            return nil
+        case Sym(_) as sym:
+            return env[sym]
+        case None | True | False | int() | float() | str() as value:
+            return value
+        case x if callable(x):
+            return x
+```
+
+## Evaluating
+
+```python
+def eval_expr(form, env):
+    match form:
+        ...
+        case Cons(procedure_form, argument_forms):
+            procedure = eval_expr(procedure_form, env)
+            args = [eval_expr(arg, env) for arg in argument_forms]
+            return procedure(*args)
+        ...
+```
+
+## Evaluating
+
+```python
+def eval_expr(form, env):
+    match form:
+        ...
+        case Cons(Sym('if'), Cons(predicate, Cons(consequent, Cons(alternative, Nil())))):
+            if eval_expr(predicate, env):
+                return eval_expr(consequent, env)
+            return eval_expr(alternative, env)
+        ...
+```
+
+## Evaluating
+
+```python
+def eval_expr(form, env):
+    match form:
+        case Cons(Sym('fn'), Cons(Vec() as params, Cons(body, Nil()))):
+            return Fn(params.xs, body, env)
+
+        ...
+
+@dataclass
+class Fn:
+    params: tuple
+    body: 'Any'
+    env: 'Mapping'
+
+    def __call__(self, *args):
+        env = self.env | dict(zip(self.params, args, strict=True))
+        return eval_expr(self.body, env)
+```
+
+## Evaluating
+
+```python
+def eval_expr(form, env):
+    match form:
+        case Cons(Sym('fn'), Cons(Vec() as params, Cons(body, Nil()))):
+            return Fn(params.xs, body, env)
+
+        case Cons(Sym('if'), Cons(predicate, Cons(consequent, Cons(alternative, Nil())))):
+            if eval_expr(predicate, env):
+                return eval_expr(consequent, env)
+            return eval_expr(alternative, env)
+
+        case Cons(procedure_form, argument_forms):
+            procedure = eval_expr(procedure_form, env)
+            args = [eval_expr(arg, env) for arg in argument_forms]
+            return procedure(*args)
+        case Nil() as nil:
+            return nil
+        case Sym(_) as sym:
+            return env[sym]
+        case None | True | False | int() | float() | str() as value:
+            return value
+        case x if callable(x):
+            return x
+    raise Exception(f'invalid form: {form}')
+```
+
+## Evaluating
+
+```python
+@dataclass
+class Fn:
+    params: tuple
+    body: 'Any'
+    env: 'Mapping'
+
+    def __call__(self, *args):
+        env = self.env | dict(zip(self.params, args, strict=True))
+        return eval_expr(self.body, env)
+
+
+initial_env = {
+    Sym('+'): lambda a, b: a + b,
+    Sym('-'): lambda a, b: a - b,
+    Sym('*'): lambda a, b: a * b,
+    Sym('/'): lambda a, b: a / b,
+    Sym('<'): lambda a, b: a < b,
+    Sym('>'): lambda a, b: a > b,
+}
 ```
 
 ##
 
-![_Pipeline_](compilation-stages.svg)
+```python
+>>> # (+ 1 2) -> 3
+>>> eval_expr(Cons(Sym('+'), Cons(1, Cons(2, Nil()))), initial_env)
+3
+```
 
+. . .
+
+```python
+>>> # (if (< 1 2) true false) -> true
+>>> eval_expr(Cons(Sym('if'), Cons(Cons(Sym('<'), Cons(1, Cons(2, Nil()))), Cons(True, Cons(False, Nil())))), initial_env)
+True
+```
+
+. . .
+
+```python
+>>> # (fn [a b] (* a b)) -> Fn(...)
+>>> eval_expr(Cons(Sym('fn'), Cons(Vec((Sym('a'), Sym('b'))), Cons(Cons(Sym('*'), Cons(Sym('a'), Cons(Sym('b'), Nil()))), Nil()))), initial_env)
+Fn(params=(Sym(n='a'), Sym(n='b')), body=Cons(hd=Sym(n='*'), tl=Cons(hd=Sym(n='a'), tl=Cons(hd=Sym(n='b'), tl=Nil()))), env={Sym(n='+'): <function <lambda> at 0x1029c1bd0>, Sym(n='-'): <function <lambda> at 0x1029c1ea0>, Sym(n='*'): <function <lambda> at 0x1029c1fc0>, Sym(n='/'): <function <lambda> at 0x1029c2050>, Sym(n='<'): <function <lambda> at 0x1029c20e0>, Sym(n='>'): <function <lambda> at 0x1029c2170>})
+```
+
+. . .
+
+```python
+>>> # ((fn [a] (* a 11)) 7)  -> 11
+>>> eval_expr(Cons(Cons(Sym('fn'), Cons(Vec((Sym('a'),)), Cons(Cons(Sym('*'), Cons(Sym('a'), Cons(11, Nil()))), Nil()))), Cons(7, Nil())), initial_env)
+77
+```
+
+## How does Pack compare?
+
+* Symbols in Pack are namespaced.
+  - `pack.core/+`{.clojure} → `Sym('pack.core', '+')`{.python}
+* Symbols resolve to a mutable value cell called a Var
+* Pack has 11 special forms, rather than 2
+* Persistent, immutable Vector and Map types with _O(log~32~(n))_ access.
+* _... blah blah blah_
 
 ## Match Case - What does this buy us?
 
@@ -374,31 +636,132 @@ def nest_loop_in_recursive_fn(expr):
 ## Match Case Pitfalls
 
 * Easy to forget a positional argument when matching dataclasses
+  - `case Cons(hd):`{.python} is the same as `case Cons(hd, _)`{.python}
+    - so would match `Cons(1, Cons(2, Cons(3, Nil())))`{.python} etc
 * Easy to accidentally return None:
   * Have a default case or return an error
-  * Start writing the function with a `raise NotImplementedError` at the bottom
-  * Use `typing.NoReturn` or (new in python 3.11) `typing.Never`
-* The ordering of case statements matters a lot
-* `[ ... ]` matches any sequence, not just lists
+  * Start writing the function with a `raise NotImplementedError`{.python} at the bottom
+  * Use `typing.NoReturn`{.python} or (new in python 3.11)
+    `typing.Never`{.python}
+* The ordering of case statements matters
+  - Our `case Cons(proc, args)`{.python} must come after our
+    `case Cons(Sym('if'), ...):`{.python}
+
+
+## Match Case Pitfalls
+
+* `[ ]` matches any sequence, not just a list
 * Not possible to factor out constants
+  - Suppose `FN = Sym('fn')`{.python}
+  - `case Cons(FN, _):`{.python} captures the symbol name as FN
+    + e.g. `Cons(Sym('if'))`{.python}
+      would match and give `FN`{.python} bound as `Sym('if')`{.python}
+  - `class Forms: FN = Sym('fn')`{.python}
+  - `case Cons(Forms.FN, _):`{.python} is now equivalent to
+    `case Cons(Sym('fn'), _):`{.python} but is longer 😩
 
-
+<!--
 Failover cases look nice, but lead to errors
 
+Later Dan: what did I mean by this?
+-->
+
+
+## The Itch
+
+
+<pre><code>
+def eval_expr(form, env):
+    match form:
+        ...
+        case Cons(Sym('if'), Cons(predicate, Cons(consequent, Cons(alternative, Nil())))):
+            if <mark>eval_expr</mark>(predicate, env):
+                return <mark>eval_expr</mark>(consequent, env)
+            return <mark>eval_expr</mark>(alternative, env)
+
+        case Cons(procedure_form, argument_forms):
+            procedure = <mark>eval_expr</mark>(procedure_form, env)
+            args = [<mark>eval_expr</mark>(arg, env) for arg in argument_forms]
+            return procedure(*args)
+        ...
+</pre></code>
+
+
+## Pack's Interpreter and Compiler Pipeline
+
+:::::::::::::: {.columns}
+::: {.column width="33%"}
+### Interpreter
+- read forms
+- expand quasi-quotes
+- expand macros
+- validate special form syntax
+- create defs
+- evaluate top level forms
+- evaluate expressions
+:::
+::: {.column width="33%"}
+### Compiler
+- extract closure
+- deduce scope
+- replace complex quoted data
+- replace data literals
+- hoist lambdas
+- resolve qualified symbols
+:::
+::: {.column width="33%"}
+- nest loop within recursive fn
+- replace loop/recur with while-true
+- convert to intermediate
+- convert `if` expression -> statement
+- hoist statements
+- place return
+- convert to python
+:::
+::::::::::::::
+
+##
+
+How do we avoid repetition and mistakes?
+
+::: notes
+Doing something similar to that evaluator for all 19 syntactical passes
+is likely to be very error prone.
+:::
 
 ## Recursion Schemes
 
+Idea:
 
-## This needs to 
+Can we just write the recursion once?
+
+## `fmap`
+
+Answer: yes
+
+```python
+def fmap(f, form):
+    match form:
+        case Cons(Sym('fn'), Cons(Vec() as params, Cons(body, Nil()))):
+            return Cons(Sym('fn'), Cons(Vec() as params, Cons(f(body), Nil())))
+
+        case Cons(Sym('if'), Cons(predicate, Cons(consequent, Cons(alternative, Nil())))):
+            return Cons(Sym('if'), Cons(f(predicate), Cons(f(consequent), Cons(f(alternative), Nil()))))
+
+        case Cons(procedure_form, argument_forms):
+            return Cons(f(procedure_form), to_cons_list(map(f, [*argument_forms])))
+
+        case other:
+            return other
+```
+
+
+##
 
 rewriting to use a single pass
 
 ```python
 def convert_if_expr_to_stmt(i=0):
-    def next_temp(prefix=""):
-        nonlocal i
-        i += 1
-        return Sym(None, f'{prefix}__t.{i}')
 
     fst = lambda pair: pair[0]
     snd = lambda pair: pair[1]
@@ -431,9 +794,11 @@ base case
 
 
 ## Future Work / Ideas
--
-- ~Finish compilation (i.e. transpilation) pipeline~
+
+- ~~Finish compilation (i.e. transpilation) pipeline~~
 - python keyword argument compatibility
+- Add `try` `except`
+- Try to return to a regular sleeping pattern
 
 ## Recursion Schemes - Resources
 

@@ -31,7 +31,7 @@ digraph G {
 		b5[label="resolve qualified symbols"];
 		b6[label="nest loop within recursive fn"];
 		b7[label="replace loop/recur with while"];
-		b8[label="convert to intermedate"];
+		b8[label="convert to intermediate"];
 		b9[label="convert 'if' expression -> statement"];
 		b10[label="hoist statements"];
 		b11[label="place return"];
